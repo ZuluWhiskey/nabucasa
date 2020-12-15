@@ -1,0 +1,10 @@
+push:
+  categories:
+    - name: Bins
+      identifier: 'bins'
+      actions:
+        - identifier: 'BINS_ARE_OUT'
+          title: 'Bins are out'
+          destructive: true
+        - identifier: 'BINS_ARE_NOT_OUT'
+          title: 'Snooze'

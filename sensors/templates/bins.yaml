@@ -1,0 +1,24 @@
+platform: template
+sensors:
+  bins:
+    friendly_name: 'Bins'
+    value_template: >-
+      {% if is_state('sensor.general_waste', 'tomorrow') and is_state('sensor.recycling', 'tomorrow') %}
+        all bins
+      {% elif is_state('sensor.general_waste', 'tomorrow') %}
+        general waste
+      {% elif is_state('sensor.recycling', 'tomorrow') %}
+        recycling
+      {% else %}
+        no bins are due
+      {% endif %}
+    icon_template: >-
+      {% if is_state('sensor.general_waste', 'tomorrow') and is_state('sensor.recycling', 'tomorrow') %}
+        mdi:trash-can
+      {% elif is_state('sensor.general_waste', 'tomorrow') %}
+        mdi:trash-can
+      {% elif is_state('sensor.recycling', 'tomorrow') %}
+        mdi:recycle
+      {% else %}
+        mdi:close
+      {% endif %}

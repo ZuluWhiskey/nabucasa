@@ -1,0 +1,4 @@
+name: Washing Machine Previous Cycle Length
+has_date: false
+has_time: true
+icon: mdi:washing-machine

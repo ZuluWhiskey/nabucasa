@@ -1,0 +1,4 @@
+name: Washing Machine Start
+has_date: true
+has_time: true
+icon: mdi:washing-machine

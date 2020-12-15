@@ -1,0 +1,6 @@
+name: Zander and Demi Devices
+platform: group
+services:
+- service: mobile_app_ipad
+- service: mobile_app_zanders_iphone
+- service: mobile_app_pixel_4

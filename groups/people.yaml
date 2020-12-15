@@ -1,0 +1,5 @@
+name: People
+entities:
+  - person.zander
+  - person.demi
+icon: mdi:account-multiple

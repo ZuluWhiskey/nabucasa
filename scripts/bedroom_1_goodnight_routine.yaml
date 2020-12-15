@@ -1,0 +1,35 @@
+alias: Bedroom 1 Goodnight Routine
+description: "Goodnight routine for Bedroom 1"
+icon: mdi:bed
+mode: single
+sequence:
+- data: {}
+  entity_id: media_player.sony_bravia_tv
+  service: media_player.turn_off
+- choose:
+  - conditions:
+    - condition: state
+      entity_id: binary_sensor.guest_presence
+      state: 'on'
+    sequence:
+    - data: {}
+      entity_id: light.bedroom_1
+      service: light.turn_off
+  default:
+  - data: {}
+    entity_id: light.all_lights
+    service: light.turn_off
+- data:
+    delay: 00:00:05
+    message: "Insert message here"
+    sonos_entity: media_player.bedroom_sonos
+    volume: 0.2
+  service: script.sonos_say
+- data:
+    volume_level: 0.2
+  entity_id: media_player.bedroom_sonos
+  service: media_player.volume_set
+- data:
+    source: Rain Sounds Endless Storm Loop for sleepstudy (ASMRWhite NoiseRelaxation)
+  entity_id: media_player.bedroom_sonos
+  service: media_player.select_source

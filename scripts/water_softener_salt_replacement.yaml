@@ -1,0 +1,14 @@
+alias: Water Softener Salt Replacement
+description: "A script to log to file that the water softener salt has been replaced and to change the input_datetime to today's date"
+icon: mdi:cube-outline
+sequence:
+- data:
+    message: "{{states('sensor.softener_salt_last_replaced')}}"
+  service: notify.water_softener
+- data: {}
+  service: python_script.softener_average_calculation
+- data_template:
+    date: "{{ as_timestamp(now())|timestamp_custom('%Y-%m-%d') }}"
+  entity_id: input_datetime.softener_salt
+  service: input_datetime.set_datetime
+mode: single

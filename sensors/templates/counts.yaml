@@ -1,0 +1,46 @@
+platform: template
+sensors:
+#----- Count Automations
+  count_automations:
+    friendly_name: "Automations"
+    value_template: "{{ states.automation | list | length }}"
+#----- Count Scripts
+  count_scripts:
+    friendly_name: "Scripts"
+    value_template: "{{ states.script | list | length }}"
+#----- Count Device Trackers
+  count_device_trackers:
+    friendly_name: "Device Trackers"
+    value_template: "{{ states.device_tracker | list | length }}"
+#----- Count Binary Sensors
+  count_binary_sensors:
+    friendly_name: "Binary Sensors"
+    value_template: "{{ states.binary_sensor | list | length }}"
+#----- Count Sensors
+  count_sensors:
+    friendly_name: "Sensors"
+    value_template: "{{ states.sensor | list | length }}"
+#----- Count Switches
+  count_switches:
+    friendly_name: "Switches"
+    value_template: "{{ states.switch | list | length }}"
+#----- Input Booleans
+  count_input_booleans:
+    friendly_name: "Input Booleans"
+    value_template: "{{ states.input_boolean | list | length }}"
+#----- Input Numbers
+  count_input_numbers:
+    friendly_name: "Input Numbers"
+    value_template: "{{ states.input_number | list | length }}"
+#----- Input Texts
+  count_input_texts:
+    friendly_name: "Input Texts"
+    value_template: "{{ states.input_text | list | length }}"
+#----- Input Selects
+  count_input_selects:
+    friendly_name: "Input Selects"
+    value_template: "{{ states.input_select | list | length }}"
+#----- Input Date Times
+  count_input_datetimes:
+    friendly_name: "Input Datetimes"
+    value_template: "{{ states.input_datetime | list | length }}"

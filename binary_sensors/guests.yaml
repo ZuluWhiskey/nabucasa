@@ -1,0 +1,12 @@
+platform: template
+sensors:
+  guest_presence:
+    friendly_name: "Guests"
+    value_template: >-
+      {{ state_attr('sensor.unifi', 'TheWhiteHouse_Guest')|int > 0 }}
+    icon_template: >-
+      {% if state_attr('sensor.unifi', 'TheWhiteHouse_Guest')|int > 0 %}
+        mdi:account
+      {% else %}
+        mdi:account-off
+      {% endif %}

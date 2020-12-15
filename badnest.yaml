@@ -1,0 +1,3 @@
+user_id: !secret badnest_user_id
+access_token: !secret badnest_access_token
+region: eu

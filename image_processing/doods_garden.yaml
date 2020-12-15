@@ -1,0 +1,21 @@
+platform: doods
+scan_interval: 10000
+url: "http://127.0.0.1:8081"
+timeout: 60
+detector: tensorflow
+source:
+  - entity_id: camera.garden_generic
+file_out:
+  - "/config/www/images/cameras/{{ camera_entity.split('.')[1] }}_latest.jpg"
+confidence: 50
+# This global detection area is required for all labels
+area:
+  # Exclude top 10% of image
+  top: 0.1
+  # Exclude left 10% of image
+  left: 0.1
+  # The entire detection must be inside this box
+  covers: true
+labels:
+  - name: person
+    confidence: 90

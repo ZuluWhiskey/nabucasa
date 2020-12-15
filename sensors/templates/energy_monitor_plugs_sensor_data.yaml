@@ -1,0 +1,45 @@
+platform: template
+sensors:
+  # Plug 1
+  energy_monitor_plug_1_amps:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Current"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_1','current_a') | float }}"
+    unit_of_measurement: 'A'
+  energy_monitor_plug_1_watts:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Current Consumption"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_1','current_power_w') | float }}"
+    unit_of_measurement: 'W'
+  energy_monitor_plug_1_total_kwh:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Total Consumption"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_1','total_energy_kwh') | float }}"
+    unit_of_measurement: 'kWh'
+  energy_monitor_plug_1_volts:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Voltage"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_1','voltage') | float }}"
+    unit_of_measurement: 'V'
+  energy_monitor_plug_1_today_kwh:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Today's Consumption"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_1','today_energy_kwh') | float }}"
+    unit_of_measurement: 'kWh'
+
+  # Plug 2
+  energy_monitor_plug_2_amps:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Current"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_2','current_a') | float }}"
+    unit_of_measurement: 'A'
+  energy_monitor_plug_2_watts:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Current Consumption"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_2','current_power_w') | float }}"
+    unit_of_measurement: 'W'
+  energy_monitor_plug_2_total_kwh:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Total Consumption"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_2','total_energy_kwh') | float }}"
+    unit_of_measurement: 'kWh'
+  energy_monitor_plug_2_volts:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Voltage"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_2','voltage') | float }}"
+    unit_of_measurement: 'V'
+  energy_monitor_plug_2_today_kwh:
+    friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Today's Consumption"
+    value_template: "{{ state_attr('switch.energy_monitor_plug_2','today_energy_kwh') | float }}"
+    unit_of_measurement: 'kWh'

@@ -1,0 +1,4 @@
+platform: file
+file_path: /config/water_softener_average.txt
+name: Water Softener Average
+unit_of_measurement: 'Days'

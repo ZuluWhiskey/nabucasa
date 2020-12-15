@@ -1,0 +1,16 @@
+instances:
+- host: 172.16.0.3
+  port: 8123
+  secure: false
+  access_token: !secret hassio_access_token
+  verify_ssl: false
+  entity_prefix: 'hassio_'
+  #include:
+    #domains:
+    #- sensor
+    #- binary_sensor
+  exclude:
+    domains:
+    - zone
+    - person
+    - weather

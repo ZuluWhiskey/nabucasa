@@ -1,0 +1,1219 @@
+- id: '1596135870753'
+  alias: Action - Porch On at Night
+  description: Turn on the porch light when Zander or Demi comes home
+  trigger:
+  - entity_id: person.zander
+    platform: state
+    to: home
+  - entity_id: person.demi
+    platform: state
+    to: home
+  condition:
+  - condition: template
+    value_template: '{{ states.sun.sun.attributes.elevation | int < 1 }}'
+  action:
+  - entity_id: light.porch
+    service: light.turn_on
+    data:
+      transition: 5
+      brightness_pct: 100
+  - timeout: 00:10:00
+    wait_template: '{{ is_state(''binary_sensor.hallway_sensor_motion'', ''on'') }}'
+    continue_on_timeout: true
+  - delay: 00:01:00
+  - entity_id: light.porch
+    service: light.turn_off
+    data:
+      transition: 5
+  mode: single
+- id: '1596181797503'
+  alias: Action - Morning, Stop Sonos
+  description: Pause the Sonos speaker when someone comes downstairs in the morning
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.hallway_sensor_motion
+    to: 'on'
+  condition:
+  - after: 08:00:00
+    before: '15:00:00'
+    condition: time
+  - condition: state
+    entity_id: input_boolean.zander_phone_charging
+    state: 'off'
+  - condition: state
+    entity_id: binary_sensor.pixel_4_is_charging
+    state: 'off'
+  - condition: state
+    entity_id: media_player.bedroom_sonos
+    state: playing
+  action:
+  - data:
+      stop_actions: false
+    entity_id: automation.morning_stop_sonos
+    service: automation.turn_off
+  - data: {}
+    entity_id: media_player.bedroom_sonos
+    service: media_player.media_stop
+  mode: single
+- id: '1596194415525'
+  alias: Action - Turn on Automations at Midnight
+  description: Turn on the automations that were turned off the previous day
+  trigger:
+  - at: 00:00:00
+    platform: time
+  condition: []
+  action:
+  - data: {}
+    entity_id: automation.morning_stop_sonos
+    service: automation.turn_on
+  - data: {}
+    entity_id: automation.notification_uv
+    service: automation.turn_on
+  - service: automation.turn_on
+    data: {}
+    entity_id: automation.action_office_on
+  mode: single
+- id: '1596819411241'
+  alias: Action - Driveway Person Detection
+  description: Run image processing when movement is seen on the driveway
+  trigger:
+  - entity_id: binary_sensor.motion_driveway
+    platform: state
+    to: 'on'
+  condition:
+  - condition: template
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(states.binary_sensor.hallway_sensor_motion.last_changed)
+      > 10) }}'
+  action:
+  - repeat:
+      sequence:
+      - data:
+          entity_id: image_processing.doods_driveway_generic
+        entity_id: image_processing.doods_driveway_generic
+        service: image_processing.scan
+      - delay: 00:00:02
+      while:
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.motion_driveway
+          state: 'on'
+        - condition: state
+          entity_id: image_processing.doods_driveway_generic
+          state: '0'
+  mode: single
+- id: '1597072017383'
+  alias: Notification - DOODS Driveway
+  description: Notify Zander when someone is on the driveway
+  trigger:
+  - entity_id: image_processing.doods_driveway_generic
+    from: '0'
+    platform: state
+  condition:
+  - condition: template
+    value_template: '{{ ( as_timestamp(now()) - as_timestamp(state_attr(''automation.driveway_notification'',
+      ''last_triggered'')) |int(0) ) > 60 }}'
+  action:
+  - data:
+      data:
+        apns_headers:
+          apns-collapse-id: driveway-motion
+        attachment:
+          content-type: jpg
+          hide-thumbnail: false
+          url: /local/images/cameras/driveway_generic_latest.jpg
+        push:
+          sound: US-EN-Morgan-Freeman-Someone-Is-Arriving.wav
+          thread-id: motion
+      message: There's somebody at the door
+      title: Person detected on the driveway
+    service: notify.mobile_app_zanders_iphone
+  - service: notify.zander_telegram
+    data:
+      title: ''
+      message: ''
+      data:
+        photo:
+        - file: /config/www/images/cameras/driveway_generic_latest.jpg
+          caption: There's somebody at the front door
+  mode: single
+- id: '1597265547562'
+  alias: Notification - UPS Battery
+  description: Notify when the UPS goes on to battery backup
+  trigger:
+  - entity_id: sensor.ups_status
+    for: '10'
+    from: ONLINE
+    platform: state
+    to: ONBATT
+  condition: []
+  action:
+  - data:
+      message: The UPS has changed to battery backup
+      title: UPS is on battery
+    service: notify.mobile_app_zanders_iphone
+  mode: single
+- id: '1597326271359'
+  alias: Notification - Bins
+  description: Notify when phone is put on charge and the bins still aren't out!
+  trigger:
+  - entity_id: input_boolean.zander_phone_charging
+    platform: state
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: alert.bins
+    state: 'on'
+  action:
+  - data:
+      message: You've put your phone on charge but the bins aren't out yet!
+    service: notify.zanders_devices
+  mode: single
+- id: '1597332774236'
+  alias: Notification - UV
+  description: Notify when there is a high UV risk
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.home_uv_index'') | int > 5 }}'
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: person.zander
+      state: home
+    - condition: state
+      entity_id: person.demi
+      state: home
+  action:
+  - data:
+      stop_actions: false
+    entity_id: automation.notification_uv
+    service: automation.turn_off
+  - choose:
+    - conditions:
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: person.demi
+          state: home
+        - condition: state
+          entity_id: person.zander
+          state: home
+      sequence:
+      - data:
+          message: 'Be aware: UV is at a high level'
+        service: notify.zander_and_demi_devices
+    - conditions:
+      - condition: state
+        entity_id: person.demi
+        state: home
+      sequence:
+      - data:
+          message: 'Be aware: UV is at a high level'
+        service: notify.mobile_app_pixel_4
+    - conditions:
+      - condition: state
+        entity_id: person.zander
+        state: home
+      sequence:
+      - data:
+          message: 'Be aware: UV is at a high level'
+        service: notify.zanders_devices
+    default: []
+  mode: single
+- id: '1597401858182'
+  alias: Action - SABnzbd Download Handling
+  description: Pause SABnzbd downloads whilst someone is watching Plex, resume downloads
+    when no one is watching!
+  trigger:
+  - entity_id: sensor.sabnzbd_status
+    platform: state
+    to: Downloading
+  - entity_id: sensor.tautulli
+    platform: state
+    to: '0'
+  - platform: numeric_state
+    entity_id: sensor.tautulli
+    above: '0'
+    attribute: wan_bandwidth
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: sensor.sabnzbd_status
+          state: Downloading
+        - condition: numeric_state
+          entity_id: sensor.tautulli
+          attribute: wan_bandwidth
+          above: '0'
+      sequence:
+      - data: {}
+        service: sabnzbd.pause
+    - conditions:
+      - condition: state
+        entity_id: sensor.tautulli
+        state: '0'
+      sequence:
+      - data: {}
+        service: sabnzbd.resume
+    default: []
+  mode: restart
+- id: '1597422179076'
+  alias: Notification - Sonarr Queue Check
+  description: Check whether the Sonarr queue may be stuck
+  trigger:
+  - at: '23:59'
+    platform: time
+  condition:
+  - condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ (as_timestamp(states.sensor.time.last_changed) - as_timestamp(states.sensor.sonarr_queue.last_changed))
+        > 3600 }}'
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: sensor.sonarr_queue
+        state: '0'
+  action:
+  - data:
+      message: Sonarr may have something stuck in the queue
+    service: notify.zanders_devices
+  mode: single
+- id: '1597590401845'
+  alias: Notification -  Person Arrival
+  description: Notify when people arrive at the house
+  trigger:
+  - entity_id: person.sharon
+    platform: state
+    to: home
+  condition:
+  - condition: state
+    entity_id: sensor.uptime_minutes
+    state: '>0.5'
+  action:
+  - data:
+      message: Sharon has arrived at the house
+    service: notify.mobile_app_zanders_iphone
+  mode: parallel
+  max: 5
+- id: '1598275708520'
+  alias: Actionable Notification - Bins are out
+  description: iOS Actionable Notification for the bins being out
+  trigger:
+  - event_data:
+      actionName: BINS_ARE_OUT
+    event_type: ios.notification_action_fired
+    platform: event
+  condition: []
+  action:
+  - data: {}
+    entity_id: input_boolean.bins_out
+    service: input_boolean.turn_on
+  mode: single
+- id: '1598455075034'
+  alias: Notification - iPad Low Battery
+  description: Notify Zander when the iPad Pro has low battery
+  trigger:
+  - entity_id: input_boolean.zander_phone_charging
+    platform: state
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: sensor.ipad_battery_level
+    below: '25'
+  - condition: state
+    entity_id: sensor.ipad_battery_state
+    state: Not Charging
+  action:
+  - data:
+      message: iPad Pro needs to be put on charge
+    service: notify.mobile_app_zanders_iphone
+  mode: single
+- id: '1598965198319'
+  alias: Action - PS4 Channel Change
+  description: Change TV input and volume when PS4 is turned off
+  trigger:
+  - entity_id: media_player.playstation_4
+    for: 00:00:10
+    platform: state
+    from: playing
+  condition:
+  - condition: state
+    entity_id: sensor.living_room_tv_source
+    state: PS4
+  action:
+  - data:
+      source: Live TV
+    entity_id: media_player.living_room_tv
+    service: media_player.select_source
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{state_attr(''media_player.living_room_tv'',''volume_level'')
+          > 0.1}}'
+      sequence:
+      - data:
+          volume_level: 0.1
+        entity_id: media_player.living_room_tv
+        service: media_player.volume_set
+    default: []
+  mode: single
+- id: '1599052992016'
+  alias: Test - Notify Zander
+  description: A test automation that can be applied anywhere to test triggering
+  trigger: []
+  condition: []
+  action:
+  - data:
+      message: Trigger worked successfully
+    service: notify.mobile_app_zanders_iphone
+  mode: single
+- id: '1599225772616'
+  alias: Action - Living Room TV - Plex Movie
+  description: Automation to dim lights when Plex is playing a movie in the Living
+    Room
+  trigger:
+  - entity_id: media_player.plex_plex_for_lg_lg_49uj651v_za
+    platform: state
+  condition:
+  - condition: state
+    entity_id: input_boolean.living_room_tv_movie
+    state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.plex_plex_for_lg_lg_49uj651v_za
+        state: playing
+      - condition: state
+        entity_id: light.living_room
+        state: 'on'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 2
+          transition: 5
+        entity_id: light.living_room
+    - conditions:
+      - condition: state
+        entity_id: media_player.plex_plex_for_lg_lg_49uj651v_za
+        state: paused
+      - condition: state
+        entity_id: light.living_room
+        state: 'on'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 40
+          transition: 5
+        entity_id: light.living_room
+    default:
+    - choose:
+      - conditions:
+        - condition: state
+          entity_id: light.living_room
+          state: 'on'
+        sequence:
+        - service: light.turn_on
+          data:
+            brightness_pct: 100
+            transition: 10
+          entity_id: light.living_room
+      default: []
+    - data: {}
+      entity_id: input_boolean.living_room_tv_movie
+      service: input_boolean.turn_off
+  mode: single
+- id: '1599226030502'
+  alias: Action - Living Room TV - Plex Movie - Start
+  description: Turn on input_boolean when content is above 1 hour 10 minutes
+  trigger:
+  - entity_id: media_player.plex_plex_for_lg_lg_49uj651v_za
+    platform: state
+    to: playing
+  condition:
+  - condition: template
+    value_template: '{{ state_attr(''media_player.plex_plex_for_lg_lg_49uj651v_za'',
+      ''media_duration'') | int > 4200 }}'
+  - condition: state
+    entity_id: input_boolean.living_room_tv_movie
+    state: 'off'
+  action:
+  - data: {}
+    entity_id: input_boolean.living_room_tv_movie
+    service: input_boolean.turn_on
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.living_room
+        state: 'on'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 2
+          transition: 10
+        entity_id: light.living_room
+    default: []
+  mode: single
+- id: '1599227652331'
+  alias: Action - Nest Protect Alert - On
+  description: ''
+  trigger:
+  - entity_id: sensor.downstairs_protect_co_status
+    from: Ok
+    platform: state
+  - entity_id: sensor.downstairs_protect_smoke_status
+    from: Ok
+    platform: state
+  - entity_id: sensor.upstairs_protect_co_status
+    from: Ok
+    platform: state
+  - entity_id: sensor.upstairs_protect_smoke_status
+    from: Ok
+    platform: state
+  condition: []
+  action:
+  - data:
+      scene_id: pre_nest_protect_alert
+      snapshot_entities:
+      - light.hallway
+      - light.landing
+    service: scene.create
+  - scene: scene.red_alert
+  mode: single
+- id: '1599227837137'
+  alias: Action - Nest Protect Alert - Off
+  description: ''
+  trigger:
+  - entity_id: sensor.downstairs_protect_co_status
+    platform: state
+    to: Ok
+  - entity_id: sensor.downstairs_protect_smoke_status
+    platform: state
+    to: Ok
+  - entity_id: sensor.upstairs_protect_co_status
+    platform: state
+    to: Ok
+  - entity_id: sensor.downstairs_protect_smoke_status
+    platform: state
+    to: Ok
+  condition:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: sensor.downstairs_protect_co_status
+      state: Ok
+    - condition: state
+      entity_id: sensor.downstairs_protect_smoke_status
+      state: Ok
+    - condition: state
+      entity_id: sensor.upstairs_protect_co_status
+      state: Ok
+    - condition: state
+      entity_id: sensor.upstairs_protect_smoke_status
+      state: Ok
+  action:
+  - data: {}
+    entity_id: scene.pre_nest_protect_alert
+    service: scene.turn_on
+  mode: single
+- id: '1599231330242'
+  alias: Action - Fish Tank
+  description: ''
+  trigger:
+  - entity_id: sun.sun
+    platform: state
+    to: above_horizon
+  - entity_id: sun.sun
+    from: above_horizon
+    platform: state
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sun.sun
+        state: above_horizon
+      sequence:
+      - data: {}
+        entity_id: switch.fish_tank
+        service: switch.turn_on
+    default:
+    - data: {}
+      entity_id: switch.fish_tank
+      service: switch.turn_off
+  mode: single
+- id: '1599648655594'
+  alias: Notification - Water Softener Salt
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{states(''sensor.softener_salt_last_replaced'') | int > states(''sensor.water_softener_average'')
+      | int}}'
+  condition: []
+  action:
+  - data:
+      message: Check the softener salt, it may need replacing soon
+    service: notify.zanders_devices
+  mode: single
+- id: '1600210892574'
+  alias: Action - Nobody is Home
+  description: Perform actions when no one is at home
+  trigger:
+  - entity_id: group.persons
+    from: home
+    platform: state
+  condition:
+  - condition: state
+    entity_id: binary_sensor.guest_presence
+    state: 'off'
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: group.persons
+      state: home
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.all_lights
+        state: 'on'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        entity_id: light.all_lights
+    default: []
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.living_room_tv
+        state: 'on'
+      sequence:
+      - service: media_player.turn_off
+        data: {}
+        entity_id: media_player.living_room_tv
+    default: []
+  mode: single
+- id: '1600338367234'
+  alias: Action - Bins
+  description: Turn on the alert to notify that the bins need putting out
+  trigger:
+  - at: '20:00'
+    platform: time
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: sensor.general_waste
+      state: tomorrow
+    - condition: state
+      entity_id: sensor.recycling
+      state: tomorrow
+  action:
+  - data: {}
+    entity_id: input_boolean.bins
+    service: input_boolean.turn_on
+  mode: single
+- id: '1601974321269'
+  alias: Action - Garden Person Detection
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.motion_garden
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: group.persons
+    state: not_home
+  action:
+  - repeat:
+      while:
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: binary_sensor.motion_garden
+          state: 'on'
+        - condition: state
+          entity_id: image_processing.doods_garden_generic
+          state: '0'
+      sequence:
+      - service: image_processing.scan
+        data:
+          entity_id: image_processing.doods_garden_generic
+      - delay: 00:00:01
+  mode: single
+- id: '1602234294646'
+  alias: Action - Hallway Motion Sensor - Off
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.hallway_sensor_motion
+    to: 'off'
+    for: 0:{{(states('input_number.hallway_motion_timer')|int)+1}}:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.hallway_motion
+    state: 'on'
+  - condition: state
+    entity_id: light.hallway
+    state: 'on'
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.hallway_motion
+  - service: light.turn_off
+    data:
+      transition: 5
+    entity_id: light.hallway
+  mode: single
+- id: '1602516801722'
+  alias: Action - Bedroom 1 Dark Mode
+  description: ''
+  trigger:
+  - device_id: a86d29870c9f11eb9dc85b36557b16ed
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: dim_up
+  condition: []
+  action:
+  - service: scene.turn_on
+    data: {}
+    entity_id: scene.bedroom_1_dark
+  mode: single
+- id: '1602537342306'
+  alias: Action - Loud TV
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.living_room_tv
+    to: 'on'
+  condition:
+  - condition: numeric_state
+    entity_id: media_player.living_room_tv
+    attribute: volume_level
+    above: '0.1'
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.1
+    entity_id: media_player.living_room_tv
+  mode: single
+- id: '1602537808299'
+  alias: Action - Office On
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: light.bedroom_2
+    to: 'on'
+  condition:
+  - condition: time
+    after: 07:00
+    before: 09:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  - condition: state
+    entity_id: calendar.annual_leave
+    state: 'off'
+  action:
+  - service: automation.turn_off
+    data:
+      stop_actions: false
+    entity_id: automation.action_office_on
+  - service: switch.turn_on
+    data: {}
+    entity_id: switch.office
+  - delay: 00:00:10
+  - service: switch.turn_on
+    data: {}
+    entity_id: switch.webtop
+  mode: single
+- id: '1602690418367'
+  alias: Action - Office Off
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: device_tracker.btp227840
+    from: home
+    to: not_home
+    for: 00:05:00
+  condition:
+  - condition: state
+    entity_id: switch.office
+    state: 'on'
+  action:
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.office
+  - service: light.turn_off
+    data: {}
+    entity_id: light.bedroom_2
+  mode: single
+- id: '1604413910972'
+  alias: Device - Hallway Switch
+  description: ''
+  trigger:
+  - device_id: 25b53a690e3611eb831c533cd7edd75e
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  - device_id: 25b53a690e3611eb831c533cd7edd75e
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: dim_up
+  - device_id: 25b53a690e3611eb831c533cd7edd75e
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: dim_down
+  - device_id: 25b53a690e3611eb831c533cd7edd75e
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{trigger.event.data.event == 1000 }}'
+      sequence:
+      - service: light.toggle
+        data: {}
+        entity_id: light.landing
+    - conditions:
+      - condition: template
+        value_template: '{{trigger.event.data.event == 2000 }}'
+      sequence:
+      - service: light.toggle
+        data:
+          brightness_pct: 100
+        entity_id: light.porch
+    - conditions:
+      - condition: template
+        value_template: '{{trigger.event.data.event == 3000 }}'
+      sequence: []
+    - conditions:
+      - condition: template
+        value_template: '{{trigger.event.data.event == 4000 }}'
+      sequence:
+      - service: light.toggle
+        data: {}
+        entity_id: light.hallway
+    default: []
+  mode: parallel
+  max: 4
+- id: '1605089590651'
+  alias: Action - Reduce Sonos Volume
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.bedroom_sonos
+    from: playing
+    for: 00:00:05
+  condition:
+  - condition: template
+    value_template: '{{state_attr(''media_player.bedroom_sonos'',''volume_level'')
+      > 0.1}}'
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.1
+    entity_id: media_player.bedroom_sonos
+  mode: single
+- id: '1605544960423'
+  alias: Action - Hallway Motion Sensor - On
+  description: Turn on the Hallway light when motion is detected
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.hallway_sensor_motion
+    to: 'on'
+  condition:
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{{is_state_attr("sensor.hallway_lightlevel", "dark", True)}}'
+    - condition: template
+      value_template: '{{((as_timestamp(now()) - as_timestamp(state_attr(''automation.action_hallway_motion_sensor_off'',
+        ''last_triggered''))) /60) | int < 5}}'
+  - condition: state
+    entity_id: input_boolean.hallway_motion
+    state: 'off'
+  - condition: state
+    entity_id: light.hallway
+    state: 'off'
+  action:
+  - service: input_boolean.turn_on
+    data: {}
+    entity_id: input_boolean.hallway_motion
+  - choose:
+    - conditions:
+      - condition: time
+        after: 08:00
+        before: '23:00'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+          transition: 2
+        entity_id: light.hallway
+    default:
+    - service: light.turn_on
+      data:
+        brightness_pct: 2
+        transition: 1
+      entity_id: light.hallway
+  mode: single
+- id: '1605743100864'
+  alias: Notify me when Home Assistant can be updated
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.updater
+    to: 'on'
+  condition: []
+  action:
+  - service: persistent_notification.create
+    data:
+      title: Update Ready
+      message: You can now update Home Assistant
+  mode: single
+- id: '1605864782191'
+  alias: Zander on a call
+  description: ''
+  trigger:
+  - device_id: 47a51d490d5611ebae089fb063692af7
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: dim_up
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.landing
+        state: 'off'
+      sequence:
+      - service: light.turn_on
+        data:
+          color_name: red
+          brightness_pct: 75
+        entity_id: light.landing
+    default:
+    - service: light.turn_on
+      data:
+        rgb_color:
+        - 255
+        - 255
+        - 255
+      entity_id: light.landing
+    - delay: '00:00:00.1'
+    - service: light.turn_off
+      data: {}
+      entity_id: light.landing
+  mode: single
+- id: '1606146892924'
+  alias: Action - Hallway Motion Sensor - Dim
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.hallway_sensor_motion
+    to: 'off'
+    for: 0:{{states('input_number.hallway_motion_timer')|int}}:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.hallway_motion
+    state: 'on'
+  - condition: state
+    entity_id: light.hallway
+    state: 'on'
+  action:
+  - service: light.turn_on
+    data:
+      transition: 5
+      brightness_pct: 2
+    entity_id: light.hallway
+  mode: single
+- id: '1606209032992'
+  alias: Action - Hallway Motion Sensor - Re-Fire
+  description: If motion is detected whilst the lights are dimmed
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.hallway_sensor_motion
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: input_boolean.hallway_motion
+    state: 'on'
+  - condition: state
+    entity_id: light.hallway
+    state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: time
+        after: 08:00
+        before: '23:00'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+          transition: 2
+        entity_id: light.hallway
+    default:
+    - service: light.turn_on
+      data:
+        brightness_pct: 2
+        transition: 1
+      entity_id: light.hallway
+  mode: single
+- id: '1606820298545'
+  alias: Action - Christmas Lights - On
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: '15'
+  condition: []
+  action:
+  - service: light.turn_on
+    data: {}
+    entity_id: light.reindeer
+  - service: switch.turn_on
+    data: {}
+    entity_id: switch.smart_plug_3
+  mode: single
+- id: '1606820321687'
+  alias: Action - Christmas Lights - Off
+  description: ''
+  trigger:
+  - platform: time
+    at: '22:00'
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    entity_id: light.reindeer
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.smart_plug_3
+  mode: single
+- id: '1607077945307'
+  alias: Action - Force Entity Update - DOODS
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: image_processing.doods_driveway_generic
+    above: '0'
+    for: 00:01:00
+  condition: []
+  action:
+  - service: homeassistant.update_entity
+    data: {}
+    entity_id: image_processing.doods_driveway_generic
+  mode: single
+- id: '1607104362655'
+  alias: TP Link
+  description: ''
+  trigger:
+  - platform: time_pattern
+    seconds: /5
+  condition:
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: switch.energy_monitor_plug_1
+      state: 'on'
+    - condition: state
+      entity_id: switch.energy_monitor_plug_2
+      state: 'on'
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: switch.energy_monitor_plug_1
+        state: 'on'
+      - condition: state
+        entity_id: switch.energy_monitor_plug_2
+        state: 'on'
+      sequence:
+      - service: homeassistant.update_entity
+        data: {}
+        entity_id:
+        - switch.energy_monitor_plug_1
+        - switch.energy_monitor_plug_2
+    - conditions:
+      - condition: state
+        entity_id: switch.energy_monitor_plug_1
+        state: 'on'
+      sequence:
+      - service: homeassistant.update_entity
+        data: {}
+        entity_id: switch.energy_monitor_plug_1
+    - conditions:
+      - condition: state
+        entity_id: switch.energy_monitor_plug_2
+        state: 'on'
+      sequence:
+      - service: homeassistant.update_entity
+        data: {}
+        entity_id: switch.energy_monitor_plug_2
+    default: []
+  mode: single
+- id: '1607439878510'
+  alias: Telegram - Nola Wind Down
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:00'
+  condition:
+  - condition: state
+    entity_id: group.persons
+    state: home
+  action:
+  - service: notify.zander_telegram
+    data:
+      title: '*It''s 21:00*'
+      message: Would you like to dim the Living Room lights for Nola?
+      data:
+        inline_keyboard:
+        - Yes:/yes, No:/no
+  - wait_for_trigger:
+    - platform: event
+      event_type: telegram_callback
+      event_data:
+        command: /yes
+    - platform: event
+      event_type: telegram_callback
+      event_data:
+        command: /no
+    timeout: 00:15:00
+    continue_on_timeout: false
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{wait.trigger.event.data.command == "/yes"}}'
+      sequence:
+      - service: scene.turn_on
+        entity_id: scene.nola_wind_down
+      - service: telegram_bot.answer_callback_query
+        data:
+          callback_query_id: '{{wait.trigger.event.data.id}}'
+          message: Response Received
+    - conditions:
+      - condition: template
+        value_template: '{{wait.trigger.event.data.command == "/no"}}'
+      sequence:
+      - service: telegram_bot.answer_callback_query
+        data:
+          callback_query_id: '{{wait.trigger.event.data.id}}'
+          message: Response Received
+    default: []
+  - service: telegram_bot.delete_message
+    data:
+      message_id: '{{wait.trigger.event.data.message.message_id}}'
+      chat_id: '{{wait.trigger.event.data.message.chat.id}}'
+  mode: restart
+- id: '1607699815964'
+  alias: Action - Washing Machine - Cycle Start
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.energy_monitor_plug_2_watts
+    above: '12'
+  condition:
+  - condition: state
+    entity_id: input_boolean.washing_machine
+    state: 'off'
+  action:
+  - service: input_boolean.turn_on
+    data: {}
+    entity_id: input_boolean.washing_machine
+  - service: input_datetime.set_datetime
+    data:
+      time: '{{ now().strftime(''%H:%M:%S'') }}'
+      date: '{{ now().strftime(''%Y-%m-%d'') }}'
+    entity_id: input_datetime.washing_machine_start
+  mode: single
+- id: '1607699929230'
+  alias: Action - Washing Machine - Cycle Stop
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.energy_monitor_plug_2_watts
+    below: '3'
+    for: 00:00:30
+  condition:
+  - condition: state
+    entity_id: input_boolean.washing_machine
+    state: 'on'
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.washing_machine
+  - service: input_datetime.set_datetime
+    data:
+      time: '{{( (now().timestamp()) - (as_timestamp(states(''input_datetime.washing_machine_start'')))
+        )| float | timestamp_custom(''%H:%M:%S'',false) }}'
+    entity_id: input_datetime.washing_machine_previous_cycle
+  - service: notify.zanders_devices
+    data:
+      message: Washing machine has finished
+  mode: single
+- id: '1607700097104'
+  alias: Action - Tumble Dryer - Cycle Start
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.energy_monitor_plug_1_watts
+    above: '20'
+  condition:
+  - condition: state
+    entity_id: input_boolean.tumble_dryer
+    state: 'off'
+  action:
+  - service: input_boolean.turn_on
+    data: {}
+    entity_id: input_boolean.tumble_dryer
+  - service: input_datetime.set_datetime
+    data:
+      time: '{{ now().strftime("%H:%M:%S") }}'
+      date: '{{ now().strftime("%Y-%m-%d") }}'
+    entity_id: input_datetime.tumble_dryer_start
+  mode: single
+- id: '1607700286008'
+  alias: Action - Tumble Dryer - Cycle Stop
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.energy_monitor_plug_1_watts
+    below: '1'
+    for: 00:00:30
+  condition:
+  - condition: state
+    entity_id: input_boolean.tumble_dryer
+    state: 'on'
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.tumble_dryer
+  - service: input_datetime.set_datetime
+    data:
+      time: '{{( (now().timestamp()) - (as_timestamp(states(''input_datetime.tumble_dryer_start'')))
+        )| float | timestamp_custom(''%H:%M:%S'',false) }}'
+    entity_id: input_datetime.tumble_dryer_previous_cycle
+  - service: notify.zanders_devices
+    data:
+      message: Tumble Dryer has finished
+  mode: single

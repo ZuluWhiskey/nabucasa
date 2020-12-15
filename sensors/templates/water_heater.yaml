@@ -1,0 +1,16 @@
+platform: template
+sensors:
+  water_heater:
+    friendly_name: Water Heater Status
+    value_template: >-
+      {% if is_state('water_heater.hallway_thermostat_hot_water', 'on') %}
+        Heating
+      {% else %}
+        Off
+      {% endif %}
+    icon_template: >-
+      {% if is_state('water_heater.hallway_thermostat_hot_water', 'on') %}
+        mdi:water-boiler
+      {% else %}
+        mdi:water-boiler-off
+      {% endif %}

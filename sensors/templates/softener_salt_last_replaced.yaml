@@ -1,0 +1,7 @@
+platform: template
+sensors:
+  softener_salt_last_replaced:
+    value_template: >-
+      {{((as_timestamp(strptime(states('sensor.date'), '%d.%m.%Y'))-state_attr('input_datetime.softener_salt', 'timestamp')) | int /60/1440) | int}}
+    unit_of_measurement: 'Days'
+    friendly_name: 'Softener Salt'

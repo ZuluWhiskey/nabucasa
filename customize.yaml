@@ -1,0 +1,6 @@
+climate.hallway_thermostat:
+  min_temp: 9
+person.zander:
+  entity_picture: /local/images/zander.jpg
+person.demi:
+  entity_picture: /local/images/demi.jpg

@@ -1,0 +1,4 @@
+host: 127.0.0.1
+username: !secret ombi_username
+api_key: !secret ombi_api_key
+urlbase: request/

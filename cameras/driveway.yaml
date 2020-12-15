@@ -1,0 +1,7 @@
+platform: generic
+name: Driveway Generic
+still_image_url: https://192.168.1.2/snap.jpeg
+stream_source: rtsp://10.0.0.5:7447/IcZz8vFKrMgxhoPW
+username: !secret protect_username
+password: !secret protect_password
+verify_ssl: false

@@ -1,0 +1,24 @@
+name: The White House
+latitude: !secret home_lat
+longitude: !secret home_long
+elevation: 65
+unit_system: metric
+time_zone: Europe/London
+external_url: !secret ha_external_url
+internal_url: "http://172.16.0.2:8123"
+auth_providers:
+  - type: homeassistant
+  - type: trusted_networks
+    trusted_networks:
+      - 172.16.0.25/32 # Z iPhone 12 Pro Max
+      - 172.16.0.26/32
+      - 172.16.0.36/32
+      - 172.16.0.38/32
+      - 172.16.0.42/32
+      - 192.168.10.0/24
+    trusted_users:
+      192.168.10.0/24: !secret guest_user_id
+    allow_bypass_login: true
+customize: !include customize.yaml
+allowlist_external_dirs:
+  - /config

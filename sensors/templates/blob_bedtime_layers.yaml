@@ -1,0 +1,34 @@
+platform: template
+sensors:
+  blob_bedtime_layers:
+    friendly_name: 'Blob Bedtime Layers'
+    value_template: >-
+      {% set bedroom_3_temperature = states('sensor.hallway_sensor_temperature') | float %}
+      {% if  bedroom_3_temperature < 15 %}
+        3.5 tog sleeping bag, sleepsuit, short sleeved body suit
+      {% elif bedroom_3_temperature > 15 and bedroom_3_temperature < 18 %}
+        2.5 tog sleeping bag, sleepsuit, short sleeved body suit
+      {% elif bedroom_3_temperature > 18 and bedroom_3_temperature < 22 %}
+        1 tog sleeping bag, sleepsuit, short sleeved body suit
+      {% elif bedroom_3_temperature > 22 and bedroom_3_temperature < 24 %}
+        1 tog sleeping bag, short sleeved body suit
+      {% elif bedroom_3_temperature > 24 and bedroom_3_temperature < 26 %}
+        0.5 tog sleeping bag, short sleeved body suit
+      {% elif bedroom_3_temperature > 26 %}
+        short sleeved body suit
+      {% endif %}
+#    entity_picture_template: >-
+#      {% set bedroom_3_temperature = states('sensor.hallway_sensor_temperature') | float %}
+#      {% if  bedroom_3_temperature < 15 %}
+#        /local/images/blob/lessthan15.PNG
+#      {% elif bedroom_3_temperature > 15 and bedroom_3_temperature < 18 %}
+#        /local/images/blob/15to17.PNG
+#      {% elif bedroom_3_temperature > 18 and bedroom_3_temperature < 22 %}
+#        /local/images/blob/18to21.PNG
+#      {% elif bedroom_3_temperature > 22 and bedroom_3_temperature < 24 %}
+#        /local/images/blob/22to23.PNG
+#      {% elif bedroom_3_temperature > 24 and bedroom_3_temperature < 26 %}
+#        /local/images/blob/24to25.PNG
+#      {% elif bedroom_3_temperature > 26 %}
+#        /local/images/blob/over26.PNG
+#      {% endif %}

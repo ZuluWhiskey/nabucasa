@@ -1,0 +1,4 @@
+name: Water Softener
+platform: file
+filename: water_softener.log
+timestamp: true

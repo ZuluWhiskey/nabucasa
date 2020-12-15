@@ -1,0 +1,5 @@
+name: Zanders Devices
+platform: group
+services:
+- service: mobile_app_ipad
+- service: mobile_app_zanders_iphone

@@ -1,0 +1,22 @@
+exclude:
+  entities:
+    - sensor.time
+    - sensor.date
+    - light.upstairs
+    - light.downstairs
+    - light.all_lights
+    - sensor.home_realfeel_temperature
+    - sensor.home_pressure_tendency
+    - sensor.home_precipitation
+    - sensor.home_cloud_ceiling
+    - automation.tp_link
+    - sensor.tumble_dryer_time
+    - sensor.washing_machine_time
+  entity_globs:
+    - sensor.count_*
+    - sensor.sabnzbd_*
+    - sensor.browser_*
+    - media_player.browser_*
+    - light.browser_*
+  domains:
+    - weather

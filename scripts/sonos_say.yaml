@@ -1,0 +1,22 @@
+alias: Sonos TTS script
+sequence:
+- data_template:
+    entity_id: '{{ sonos_entity }}'
+  service: sonos.snapshot
+- data_template:
+    entity_id: '{{ sonos_entity }}'
+  service: sonos.unjoin
+- data_template:
+    entity_id: '{{ sonos_entity }}'
+    volume_level: '{{ volume }}'
+  service: media_player.volume_set
+- data_template:
+    entity_id: '{{ sonos_entity }}'
+    message: '{{ message }}'
+  service: tts.google_translate_say
+- delay: '{{ delay }}'
+- data_template:
+    entity_id: '{{ sonos_entity }}'
+  service: sonos.restore
+mode: single
+icon: mdi:speaker

@@ -1,0 +1,1 @@
+water_softener_average: "/usr/bin/python3 /home/zander/homeassistant/python_scripts/softener_average_calculation.py"

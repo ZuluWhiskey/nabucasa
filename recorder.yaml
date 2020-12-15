@@ -1,0 +1,12 @@
+exclude:
+  entities:
+    - sensor.time
+    - sensor.date
+  entity_globs:
+    - sensor.cert_expiry_*
+    - sensor.*_next_alarm
+    - sensor.*_next_timer
+    - sensor.*_next_reminder
+    - switch.*_do_not_disturb_switch
+    - switch.*_repeat_switch
+    - switch.*_shuffle_switch

@@ -1,0 +1,3 @@
+platform: switch
+name: Reindeer
+entity_id: switch.smart_plug_1

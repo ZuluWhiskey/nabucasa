@@ -1,0 +1,5 @@
+platform: waze_travel_time
+name: "Demi's Work"
+origin: !secret home_lat_long
+destination: !secret demi_work_destination
+region: 'EU'

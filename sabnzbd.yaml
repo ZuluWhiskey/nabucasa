@@ -1,0 +1,10 @@
+api_key: !secret sabnzbd_api
+host: 127.0.0.1
+path: /sabnzbd
+name: sabnzbd
+sensors:
+  - current_status
+  - speed
+  - queue_size
+  - queue_remaining
+  - queue_count

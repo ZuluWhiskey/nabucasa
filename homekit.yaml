@@ -1,0 +1,11 @@
+- name: The White House
+  filter:
+    include_domains:
+      - light
+    include_entities:
+      - media_player.living_room_tv
+      - media_player.sony_bravia_tv
+      - switch.fish_tank
+      - climate.hallway_thermostat
+    exclude_entity_globs:
+      - light.browser_*

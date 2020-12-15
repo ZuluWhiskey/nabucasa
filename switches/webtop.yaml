@@ -1,0 +1,5 @@
+platform: wake_on_lan
+name: "Webtop"
+host: 172.16.0.42
+mac: c8:5b:76:7e:a1:78
+broadcast_address: 172.16.1.255

@@ -1,0 +1,10 @@
+{
+  "domain": "badnest",
+  "name": "Bad Nest (A hack around the Nest component to pull from their internal api)",
+  "documentation": "https://custom-components.github.io/badnest",
+  "dependencies": [],
+  "codeowners": [
+    "@badguy99, @USA-RedDragon"
+  ],
+  "requirements": []
+}

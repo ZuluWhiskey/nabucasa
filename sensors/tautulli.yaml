@@ -1,0 +1,4 @@
+platform: tautulli
+api_key: !secret tautulli_api_key
+host: 127.0.0.1
+path: '/tautulli'

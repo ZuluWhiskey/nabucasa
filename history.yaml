@@ -1,0 +1,49 @@
+exclude:
+  entities:
+    - sun.sun
+    - camera.driveway
+    - camera.garden
+    - media_player.alex_s_alexa_apps
+    - media_player.home
+    - media_player.spotify_zander_white
+    - media_player.this_device
+    - sensor.general_waste
+    - sensor.recycling
+    - sensor.tautulli
+    - sensor.plex_zeus
+    - camera.driveway_generic
+    - camera.garden_generic
+    - alert.bins
+    - binary_sensor.updater
+    - sensor.bins
+    - sensor.home_pressure_tendency
+    - sensor.current_version
+    - weather.accuweather_home
+    - sensor.connected_clients
+    - sensor.home_cloud_ceiling
+    - sensor.home_precipitation
+    - sensor.hacs
+    - sensor.opensky
+    - sensor.tumble_dryer_time
+    - sensor.washing_machine_time
+  domains:
+    - automation
+    - updater
+    - script
+    - weather
+  entity_globs:
+    - sensor.ombi_*
+    - sensor.sabnzbd_*
+    - sensor.ups_*
+    - switch.sonos_alarm_*
+    - light.the_voice_group_*
+    - binary_sensor.apollo_*
+    - sensor.apollo_*
+    - sensor.anniversary_*
+    - sensor.count_*
+    - sensor.hassio_*
+    - binary_sensor.hassio_*
+    - sensor.sonarr_*
+    - sensor.browser_*
+    - media_player.browser_*
+    - light.browser_*

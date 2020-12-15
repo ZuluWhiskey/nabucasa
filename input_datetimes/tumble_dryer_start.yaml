@@ -1,0 +1,4 @@
+name: Tumble Dryer Start
+has_date: true
+has_time: true 
+icon: mdi:tumble-dryer

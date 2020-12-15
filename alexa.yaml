@@ -1,0 +1,15 @@
+smart_home:
+  filter:
+    include_domains:
+      - light
+    include_entities:
+      - media_player.living_room_tv
+      - media_player.sony_bravia_tv
+      - script.bedroom_1_goodnight_routine
+      - switch.fish_tank
+      - input_boolean.bins
+    exclude_entity_globs:
+      - light.browser_*
+  endpoint: https://api.eu.amazonalexa.com/v3/events
+  client_id: !secret alexa_client_id
+  client_secret: !secret alexa_client_secret

@@ -1,0 +1,34 @@
+# Filetypes to allow:
+!*.yaml
+!*.py
+!*.js
+!*.gz
+
+# Files to allow:
+!.gitignore
+!.gitkeep
+
+# File types to ignore:
+*.log
+*.db
+
+# Folders to ignore:
+.storage
+.cloud
+.google.token
+tts
+www/images
+deps
+image
+custom_components/doods/models/
+
+# Files to ignore:
+ip_bans.yaml
+secrets.yaml
+known_devices.yaml
+google_service_account.json
+webostv.conf
+.ps4-games.00D9D1E6462D_2615.json
+.ip_authenticated.yaml
+google_calendars.yaml
+water_softener_average.txt

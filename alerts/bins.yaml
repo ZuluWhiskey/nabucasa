@@ -1,0 +1,11 @@
+name: Bins are not out
+message: "Put out {{states('sensor.bins')}} ready for tomorrow!"
+done_message: "The bins are out, well done!"
+entity_id: input_boolean.bins
+state: 'on'
+repeat:
+  - 60
+  - 15
+can_acknowledge: false
+notifiers:
+  - mobile_app_zanders_iphone

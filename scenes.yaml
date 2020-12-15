@@ -1,0 +1,164 @@
+- id: '1598277212013'
+  name: Bedroom 1 Dark
+  entities:
+    light.bedroom_1_fan_1:
+      min_mireds: 153
+      max_mireds: 454
+      brightness: 1
+      color_temp: 454
+      is_deconz_group: false
+      friendly_name: Bedroom 1 Fan 1
+      supported_features: 43
+      state: 'on'
+    light.bedroom_1_fan_2:
+      min_mireds: 153
+      max_mireds: 454
+      is_deconz_group: false
+      friendly_name: Bedroom 1 Fan 2
+      supported_features: 43
+      state: 'off'
+    light.lightstrip:
+      effect_list:
+      - colorloop
+      is_deconz_group: false
+      friendly_name: Lightstrip
+      supported_features: 61
+      state: 'off'
+  icon: mdi:bed
+- id: '1598449134530'
+  name: Bedroom 1 Bright
+  entities:
+    light.bedroom_1_fan_1:
+      brightness: 255
+      color_temp: 300
+      friendly_name: Bedroom 1 Fan 1
+      max_mireds: 454
+      min_mireds: 153
+      state: 'on'
+      supported_features: 43
+    light.bedroom_1_fan_2:
+      brightness: 255
+      color_temp: 309
+      friendly_name: Bedroom 1 Fan 2
+      max_mireds: 454
+      min_mireds: 153
+      state: 'on'
+      supported_features: 43
+    light.windowsill:
+      brightness: 255
+      effect: none
+      effect_list:
+      - colorloop
+      - random
+      friendly_name: Bedroom 1 TV Cabinet
+      hs_color:
+      - 38.824
+      - 53.333
+      rgb_color:
+      - 255
+      - 207
+      - 119
+      state: 'on'
+      supported_features: 61
+      xy_color:
+      - 0.458
+      - 0.411
+  icon: mdi:bed
+- id: '1599222742965'
+  name: Red Alert
+  entities:
+    light.hallway_ceiling:
+      brightness: 255
+      effect: none
+      effect_list:
+      - colorloop
+      - random
+      friendly_name: Hallway Ceiling
+      hs_color:
+      - 10.118
+      - 100
+      max_mireds: 500
+      min_mireds: 153
+      rgb_color:
+      - 255
+      - 43
+      - 0
+      state: 'on'
+      supported_features: 63
+      xy_color:
+      - 0.689
+      - 0.309
+    light.landing_ceiling:
+      brightness: 255
+      effect: none
+      effect_list:
+      - colorloop
+      - random
+      friendly_name: Landing Ceiling
+      hs_color:
+      - 10.202
+      - 96.863
+      max_mireds: 500
+      min_mireds: 153
+      rgb_color:
+      - 255
+      - 49
+      - 7
+      state: 'on'
+      supported_features: 63
+      xy_color:
+      - 0.684
+      - 0.311
+  icon: mdi:alert
+- id: '1603492985233'
+  name: Breastfeeding Daddy
+  entities:
+    light.bedroom_1_fan_1:
+      min_mireds: 153
+      max_mireds: 454
+      is_deconz_group: false
+      friendly_name: Bedroom 1 Fan 1
+      supported_features: 43
+      state: 'off'
+    light.bedroom_1_fan_2:
+      min_mireds: 153
+      max_mireds: 454
+      brightness: 72
+      color_temp: 153
+      is_deconz_group: false
+      friendly_name: Bedroom 1 Fan 2
+      supported_features: 43
+      state: 'on'
+    light.lightstrip:
+      effect_list:
+      - colorloop
+      is_deconz_group: false
+      friendly_name: Lightstrip
+      supported_features: 61
+      state: 'off'
+- id: '1607535388047'
+  name: Nola Wind Down
+  entities:
+    light.living_room_1:
+      min_mireds: 140
+      max_mireds: 650
+      brightness: 3
+      color_temp: 454
+      is_deconz_group: false
+      friendly_name: Living Room 1
+      supported_features: 43
+      state: 'on'
+    light.living_room_2:
+      min_mireds: 140
+      max_mireds: 650
+      is_deconz_group: false
+      friendly_name: Living Room 2
+      supported_features: 43
+      state: 'off'
+    light.living_room_3:
+      min_mireds: 140
+      max_mireds: 650
+      is_deconz_group: false
+      friendly_name: Living Room 3
+      supported_features: 43
+      state: 'off'

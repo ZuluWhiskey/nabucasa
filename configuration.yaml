@@ -1,0 +1,147 @@
+## Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+## Logging
+logger: !include logger.yaml
+
+## Recorder
+recorder: !include recorder.yaml
+
+## Logbook
+logbook: !include logbook.yaml
+
+## Hisotry
+history: !include history.yaml
+
+## Groups
+group: !include_dir_named groups/
+
+## Automations
+automation: !include automations.yaml
+automation manual: !include_dir_named automations/
+
+## Scripts
+#script: !include scripts.yaml
+#script manual: !include_dir_named scripts/
+script: !include_dir_named scripts/
+
+## Scenes
+scene: !include scenes.yaml
+
+## Notifications
+notify: !include_dir_list notifications/
+
+## Home Assistant
+homeassistant: !include homeassistant.yaml
+
+## Enable various aspects
+wake_on_lan: # Wake-On-LAN!
+media_player: # Media Player
+websocket_api: # Websocket API
+python_script: # Python scripts
+
+## Frontend
+frontend: !include frontend.yaml
+
+# Text to speech
+tts: !include tts.yaml
+
+## Spotify
+spotify: !include spotify.yaml
+
+# Speed Test - Fast.com (Netflix)
+fastdotcom: !include fastdotcom.yaml
+
+## Switches
+switch: !include_dir_list switches/
+
+## Sensors
+sensor: !include_dir_list sensors/
+
+## BadNest
+badnest: !include badnest.yaml
+
+## Climate
+climate: !include_dir_list climates/
+
+## Water Heater
+water_heater: !include water_heater.yaml
+
+## LG TV
+webostv: !include_dir_list webostvs/
+
+## Kasa / TP-Link
+tplink: !include tplink.yaml
+
+## Countdown Timer
+#anniversaries:
+  #sensors: !include_dir_list anniversaries/
+
+## HTTP
+http: !include http.yaml
+
+## Stream
+#stream:
+
+## Image Processing
+image_processing: !include_dir_list image_processing/
+
+## APC UPS
+apcupsd: !include apcupsd.yaml
+
+## SABnzbd
+sabnzbd: !include sabnzbd.yaml
+
+## iOS
+ios: !include ios.yaml
+
+## Ombi
+ombi: !include ombi.yaml
+
+## Binary Sensors
+binary_sensor: !include_dir_list binary_sensors/
+
+## Inputs
+input_boolean: !include_dir_named input_booleans/
+input_datetime: !include_dir_named input_datetimes/
+input_text: !include_dir_named input_texts/
+input_number: !include_dir_named input_numbers/
+input_select: !include_dir_named input_selects/
+
+## Camera
+camera: !include_dir_list cameras/
+
+## Voice Assistants
+alexa: !include alexa.yaml
+google_assistant: !include google_assistant.yaml
+
+## Lights
+light: !include_dir_list lights/
+
+## Alerts
+alert: !include_dir_named alerts/
+
+## Google Calendar
+google: !include google.yaml
+
+## HomeKit
+homekit: !include homekit.yaml
+
+## Remote Home Assistant
+#remote_homeassistant: !include remote_homeassistant.yaml
+
+## HACS Components
+browser_mod:
+  prefix: "browser_"
+
+## Timers
+timer: !include_dir_named timers/
+
+## PyScript
+#pyscript:
+
+## Shell Commands
+shell_command: !include_dir_merge_named shell_commands/
+
+# Telegram
+telegram_bot: !include telegram_bot.yaml

@@ -1,0 +1,5 @@
+platform: wake_on_lan
+name: "Living Room TV"
+host: 172.16.0.30
+mac: b4:e6:2a:df:8d:02
+broadcast_address: 172.16.1.255
