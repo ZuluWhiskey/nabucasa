@@ -1,0 +1,2 @@
+# nabucasa
+Home Assistant configuration
