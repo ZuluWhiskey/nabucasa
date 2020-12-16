@@ -1079,7 +1079,7 @@
     at: '21:00'
   condition:
   - condition: state
-    entity_id: group.persons
+    entity_id: group.people
     state: home
   action:
   - service: notify.zander_telegram

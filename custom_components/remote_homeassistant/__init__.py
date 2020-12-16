@@ -46,6 +46,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.reload import async_integration_yaml_config
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.setup import async_setup_component
 
 from .const import (
     CONF_REMOTE_CONNECTION,
@@ -56,9 +57,10 @@ from .const import (
     CONF_EXCLUDE_ENTITIES,
     CONF_OPTIONS,
     CONF_REMOTE_INFO,
+    CONF_LOAD_COMPONENTS,
     DOMAIN,
 )
-from .rest_api import async_get_discovery_info
+from .rest_api import UnsupportedVersion, async_get_discovery_info
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -121,6 +123,7 @@ INSTANCES_SCHEMA = vol.Schema(
             CONF_SUBSCRIBE_EVENTS, default=DEFAULT_SUBSCRIBED_EVENTS
         ): cv.ensure_list,
         vol.Optional(CONF_ENTITY_PREFIX, default=DEFAULT_ENTITY_PREFIX): cv.string,
+        vol.Optional(CONF_LOAD_COMPONENTS): cv.ensure_list,
     }
 )
 
@@ -160,14 +163,14 @@ def async_yaml_to_config_entry(instance_conf):
         if CONF_DOMAINS in exclude:
             options[CONF_EXCLUDE_DOMAINS] = exclude[CONF_DOMAINS]
 
-    if CONF_FILTER in conf:
-        options[CONF_FILTER] = conf.pop(CONF_FILTER)
-
-    if CONF_SUBSCRIBE_EVENTS in conf:
-        options[CONF_SUBSCRIBE_EVENTS] = conf.pop(CONF_SUBSCRIBE_EVENTS)
-
-    if CONF_ENTITY_PREFIX in conf:
-        options[CONF_ENTITY_PREFIX] = conf.pop(CONF_ENTITY_PREFIX)
+    for option in [
+        CONF_FILTER,
+        CONF_SUBSCRIBE_EVENTS,
+        CONF_ENTITY_PREFIX,
+        CONF_LOAD_COMPONENTS,
+    ]:
+        if option in conf:
+            options[option] = conf.pop(option)
 
     return conf, options
 
@@ -240,15 +243,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         CONF_UNSUB_LISTENER: entry.add_update_listener(_update_listener),
     }
 
-    async def setup_platforms():
+    async def setup_components_and_platforms():
         """Set up platforms and initiate connection."""
+        for domain in entry.options.get(CONF_LOAD_COMPONENTS, []):
+            hass.async_create_task(async_setup_component(hass, domain, {}))
         for component in PLATFORMS:
             hass.async_create_task(
                 hass.config_entries.async_forward_entry_setup(entry, component)
             )
         await remote.async_connect()
 
-    hass.async_create_task(setup_platforms())
+    hass.async_create_task(setup_components_and_platforms())
 
     return True
 
@@ -371,14 +376,20 @@ class RemoteConnection(object):
                     self._access_token,
                     self._verify_ssl,
                 )
+            except OSError:
+                _LOGGER.exception("failed to connect")
+            except UnsupportedVersion:
+                _LOGGER.error("Unsupported version, at least 0.111 is required.")
             except Exception:
                 _LOGGER.exception("failed to fetch instance info")
-                return None
+            return None
 
         @callback
         def _async_instance_id_match(info):
             """Verify if remote instance id matches the expected id."""
-            if info["uuid"] != self._entry.unique_id:
+            if not info:
+                return False
+            if info and info["uuid"] != self._entry.unique_id:
                 _LOGGER.error(
                     "instance id not matching: %s != %s",
                     info["uuid"],
@@ -395,8 +406,8 @@ class RemoteConnection(object):
         while True:
             info = await _async_instance_get_info()
 
-            # If an instance id is set, verify we are talking to correct instance
-            if not (info or _async_instance_id_match(info)):
+            # Verify we are talking to correct instance
+            if not _async_instance_id_match(info):
                 self.set_connection_state(STATE_RECONNECTING)
                 await asyncio.sleep(10)
                 continue
@@ -434,6 +445,7 @@ class RemoteConnection(object):
 
             _LOGGER.debug("Sending ping")
             event = asyncio.Event()
+
             def resp(message):
                 _LOGGER.debug("Got pong: %s", message)
                 event.set()
@@ -477,7 +489,10 @@ class RemoteConnection(object):
             self._hass.states.async_remove(entity)
         if self._heartbeat_task is not None:
             self._heartbeat_task.cancel()
-            await self._heartbeat_task
+            try:
+                await self._heartbeat_task
+            except asyncio.CancelledError:
+                pass
         if self._remove_listener is not None:
             self._remove_listener()
 
