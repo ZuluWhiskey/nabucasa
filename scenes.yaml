@@ -110,32 +110,6 @@
       - 0.684
       - 0.311
   icon: mdi:alert
-- id: '1603492985233'
-  name: Breastfeeding Daddy
-  entities:
-    light.bedroom_1_fan_1:
-      min_mireds: 153
-      max_mireds: 454
-      is_deconz_group: false
-      friendly_name: Bedroom 1 Fan 1
-      supported_features: 43
-      state: 'off'
-    light.bedroom_1_fan_2:
-      min_mireds: 153
-      max_mireds: 454
-      brightness: 72
-      color_temp: 153
-      is_deconz_group: false
-      friendly_name: Bedroom 1 Fan 2
-      supported_features: 43
-      state: 'on'
-    light.lightstrip:
-      effect_list:
-      - colorloop
-      is_deconz_group: false
-      friendly_name: Lightstrip
-      supported_features: 61
-      state: 'off'
 - id: '1607535388047'
   name: Nola Wind Down
   entities:
