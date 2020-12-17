@@ -25,10 +25,17 @@ from homeassistant.const import (
 from homeassistant.core import callback
 
 from . import async_yaml_to_config_entry
-from .rest_api import ApiProblem, CannotConnect, InvalidAuth, async_get_discovery_info
+from .rest_api import (
+    ApiProblem,
+    CannotConnect,
+    InvalidAuth,
+    UnsupportedVersion,
+    async_get_discovery_info,
+)
 from .const import (
     CONF_REMOTE_CONNECTION,
     CONF_SECURE,
+    CONF_LOAD_COMPONENTS,
     CONF_FILTER,
     CONF_SUBSCRIBE_EVENTS,
     CONF_ENTITY_PREFIX,
@@ -100,6 +107,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
+            except UnsupportedVersion:
+                errors["base"] = "unsupported_version"
             except Exception:  # pylint: disable=broad-except
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
@@ -188,6 +197,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             self.options = user_input.copy()
             return await self.async_step_domain_entity_filters()
 
+        domains, _ = self._domains_and_entities()
+        domains = set(domains + self.config_entry.options.get(CONF_LOAD_COMPONENTS, []))
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
@@ -199,7 +210,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                                 CONF_ENTITY_PREFIX
                             )
                         },
-                    ): str
+                    ): str,
+                    vol.Optional(
+                        CONF_LOAD_COMPONENTS,
+                        default=self._default(CONF_LOAD_COMPONENTS),
+                    ): cv.multi_select(sorted(domains)),
                 }
             ),
         )
