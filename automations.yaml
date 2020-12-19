@@ -88,8 +88,8 @@
   - repeat:
       sequence:
       - data:
-          entity_id: image_processing.doods_driveway_generic
-        entity_id: image_processing.doods_driveway_generic
+          entity_id: image_processing.doods_driveway
+        entity_id: image_processing.doods_driveway
         service: image_processing.scan
       - delay: 00:00:02
       while:
@@ -99,14 +99,14 @@
           entity_id: binary_sensor.motion_driveway
           state: 'on'
         - condition: state
-          entity_id: image_processing.doods_driveway_generic
+          entity_id: image_processing.doods_driveway
           state: '0'
   mode: single
 - id: '1597072017383'
   alias: Notification - DOODS Driveway
   description: Notify Zander when someone is on the driveway
   trigger:
-  - entity_id: image_processing.doods_driveway_generic
+  - entity_id: image_processing.doods_driveway
     from: '0'
     platform: state
   condition:
@@ -121,7 +121,7 @@
         attachment:
           content-type: jpg
           hide-thumbnail: false
-          url: /local/images/cameras/driveway_generic_latest.jpg
+          url: /local/images/cameras/driveway_latest.jpg
         push:
           sound: US-EN-Morgan-Freeman-Someone-Is-Arriving.wav
           thread-id: motion
@@ -134,7 +134,7 @@
       message: ''
       data:
         photo:
-        - file: /config/www/images/cameras/driveway_generic_latest.jpg
+        - file: /config/www/images/cameras/driveway_latest.jpg
           caption: There's somebody at the front door
   mode: single
 - id: '1597265547562'
@@ -638,13 +638,13 @@
           entity_id: binary_sensor.motion_garden
           state: 'on'
         - condition: state
-          entity_id: image_processing.doods_garden_generic
+          entity_id: image_processing.doods_garden
           state: '0'
       sequence:
       - service: image_processing.scan
         data:
-          entity_id: image_processing.doods_garden_generic
-      - delay: 00:00:01
+          entity_id: image_processing.doods_garden
+      - delay: 00:00:02
   mode: single
 - id: '1602234294646'
   alias: Action - Hallway Motion Sensor - Off
@@ -1014,14 +1014,14 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: image_processing.doods_driveway_generic
+    entity_id: image_processing.doods_driveway
     above: '0'
     for: 00:01:00
   condition: []
   action:
   - service: homeassistant.update_entity
     data: {}
-    entity_id: image_processing.doods_driveway_generic
+    entity_id: image_processing.doods_driveway
   mode: single
 - id: '1607104362655'
   alias: TP Link
