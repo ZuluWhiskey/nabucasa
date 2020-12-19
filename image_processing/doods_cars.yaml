@@ -10,11 +10,11 @@ file_out:
   - "/config/www/images/cameras/{{ camera_entity.split('.')[1] }}_cars_latest.jpg"
 labels:
   - name: car
-    confidence: 95
+    confidence: 80
     area:
       # Exclude top 25% of image
-      top: 0.3
-      # Exclude left 50% of image
-      left: 0.6
+      top: 0.25
+      # Exclude left 70% of image
+      left: 0.7
       # Any part of the detection inside this area will trigger
       covers: false
