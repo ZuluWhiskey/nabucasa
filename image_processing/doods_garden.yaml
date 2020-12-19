@@ -4,7 +4,7 @@ url: "http://127.0.0.1:8081"
 timeout: 60
 detector: tensorflow
 source:
-  - entity_id: camera.garden_generic
+  - entity_id: camera.garden
 file_out:
   - "/config/www/images/cameras/{{ camera_entity.split('.')[1] }}_latest.jpg"
 confidence: 50

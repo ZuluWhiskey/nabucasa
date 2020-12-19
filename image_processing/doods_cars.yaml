@@ -1,19 +1,20 @@
 platform: doods
-scan_interval: 10000
+scan_interval: 300
 url: "http://127.0.0.1:8081"
 timeout: 60
 detector: tensorflow
 source:
   - entity_id: camera.driveway
+    name: DOODS Cars
 file_out:
-  - "/config/www/images/cameras/{{ camera_entity.split('.')[1] }}_latest.jpg"
+  - "/config/www/images/cameras/{{ camera_entity.split('.')[1] }}_cars_latest.jpg"
 labels:
-  - name: person
-    confidence: 90
+  - name: car
+    confidence: 95
     area:
       # Exclude top 25% of image
-      top: 0.25
+      top: 0.3
       # Exclude left 50% of image
-      left: 0.5
+      left: 0.6
       # Any part of the detection inside this area will trigger
       covers: false
