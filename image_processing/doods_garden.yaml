@@ -15,7 +15,7 @@ area:
   # Exclude left 10% of image
   left: 0.1
   # The entire detection must be inside this box
-  covers: true
+  covers: false
 labels:
   - name: person
     confidence: 90
