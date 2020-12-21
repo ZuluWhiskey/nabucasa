@@ -16,5 +16,7 @@ labels:
       top: 0.25
       # Exclude left 70% of image
       left: 0.7
+      bottom: 0.9
+      right: 0.9
       # Any part of the detection inside this area will trigger
       covers: false
