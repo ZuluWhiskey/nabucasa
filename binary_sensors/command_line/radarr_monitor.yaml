@@ -1,6 +1,0 @@
-platform: command_line
-name: Radarr Monitor
-device_class: connectivity
-command: response=$(curl -LIk -m 3 http://172.16.0.2:7878/radarr/login?returnUrl=/radarr/ -o /dev/null -w "%{http_code}\n" -s); test "$response" -eq 200 && echo "ON" || echo "OFF"
-scan_interval: 60
-value_template: '{{value}}'

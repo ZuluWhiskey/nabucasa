@@ -145,6 +145,3 @@ shell_command: !include_dir_merge_named shell_commands/
 
 # Telegram
 telegram_bot: !include telegram_bot.yaml
-
-# https://www.home-assistant.io/integrations/influxdb/
-influxdb: !include influxdb.yaml

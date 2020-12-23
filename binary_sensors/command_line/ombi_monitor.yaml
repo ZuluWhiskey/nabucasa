@@ -1,6 +1,0 @@
-platform: command_line
-name: Ombi Monitor
-device_class: connectivity
-command: response=$(curl -LIk -m 3 http://172.16.0.2:3579 -o /dev/null -w "%{http_code}\n" -s); test "$response" -eq 200 && echo "ON" || echo "OFF"
-scan_interval: 60
-value_template: '{{value}}'

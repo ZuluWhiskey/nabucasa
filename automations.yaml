@@ -564,7 +564,7 @@
   alias: Action - Nobody is Home
   description: Perform actions when no one is at home
   trigger:
-  - entity_id: group.people
+  - entity_id: group.persons
     from: home
     platform: state
   condition:
@@ -574,7 +574,7 @@
   - condition: not
     conditions:
     - condition: state
-      entity_id: group.people
+      entity_id: group.persons
       state: home
   action:
   - choose:
@@ -627,7 +627,7 @@
     to: 'on'
   condition:
   - condition: state
-    entity_id: group.people
+    entity_id: group.persons
     state: not_home
   action:
   - repeat:
@@ -875,7 +875,7 @@
       entity_id: light.hallway
   mode: single
 - id: '1605743100864'
-  alias: Notification - Home Assistant Update
+  alias: Notify me when Home Assistant can be updated
   description: ''
   trigger:
   - platform: state
@@ -886,7 +886,7 @@
   - service: persistent_notification.create
     data:
       title: Update Ready
-      message: You can now update Home Assistant to {{state_attr("binary_sensor.updater","newest_version")}}
+      message: You can now update Home Assistant
   mode: single
 - id: '1605864782191'
   alias: Zander on a call
@@ -1216,47 +1216,4 @@
   - service: notify.zanders_devices
     data:
       message: Tumble Dryer has finished
-  mode: single
-- id: '1608540479254'
-  alias: Device - IKEA Switch 1
-  description: ''
-  trigger:
-  - device_id: 28fd4502ca25475674649046c566636b
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
-  - device_id: 28fd4502ca25475674649046c566636b
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
-  condition: []
-  action:
-  - service: light.toggle
-    entity_id: light.kitchen
-  mode: single
-- id: '1608564677336'
-  alias: Action - Pre-Heat Bed
-  description: ''
-  trigger:
-  - platform: time
-    at: '22:00'
-  condition: []
-  action:
-  - service: switch.turn_on
-    data: {}
-    entity_id: switch.smart_plug_4
-  mode: single
-- id: '1608719954973'
-  alias: Grafana Webhook
-  description: ''
-  trigger:
-  - platform: webhook
-    webhook_id: grafana
-  condition: []
-  action:
-  - service: notify.persistent_notification
-    data:
-      message: '{{trigger}}'
   mode: single
