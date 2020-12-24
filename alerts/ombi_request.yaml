@@ -1,0 +1,15 @@
+name: Ombi Pending Request
+entity_id: binary_sensor.ombi_pending_requests
+state: 'on'
+repeat:
+  - 60
+  - 120
+  - 240
+  - 360
+  - 720
+can_acknowledge: false
+# Notification Information
+title: Pending Request
+message: Ombi has a pending request
+notifiers:
+  - mobile_app_zanders_iphone
