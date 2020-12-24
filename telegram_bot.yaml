@@ -1,4 +1,4 @@
 - platform: polling
   api_key: !secret telegram_api_key
   allowed_chat_ids:
-    - 1310382265 # Zander
+    - !secret zander_telegram

@@ -1,149 +1,163 @@
-## Configure a default setup of Home Assistant (frontend, api, etc)
+# https://www.home-assistant.io/integrations/default_config/
 default_config:
 
-## Logging
+# https://www.home-assistant.io/integrations/logger/
 logger: !include logger.yaml
 
-## Recorder
+# https://www.home-assistant.io/integrations/recorder/
 recorder: !include recorder.yaml
 
-## Logbook
+# https://www.home-assistant.io/integrations/logbook/
 logbook: !include logbook.yaml
 
-## Hisotry
+# https://www.home-assistant.io/integrations/history/
 history: !include history.yaml
 
-## Groups
+# https://www.home-assistant.io/integrations/group/
 group: !include_dir_named groups/
 
-## Automations
+# https://www.home-assistant.io/docs/automation/
 automation: !include automations.yaml
+
+# https://www.home-assistant.io/docs/automation/yaml/
 automation manual: !include_dir_named automations/
 
-## Scripts
+# https://www.home-assistant.io/integrations/script/
 #script: !include scripts.yaml
 #script manual: !include_dir_named scripts/
 script: !include_dir_named scripts/
 
-## Scenes
+# https://www.home-assistant.io/integrations/scene/
 scene: !include scenes.yaml
 
-## Notifications
+# https://www.home-assistant.io/integrations/notify/
 notify: !include_dir_list notifications/
 
-## Home Assistant
+# https://www.home-assistant.io/integrations/homeassistant/
 homeassistant: !include homeassistant.yaml
 
-## Enable various aspects
-wake_on_lan: # Wake-On-LAN!
-media_player: # Media Player
-websocket_api: # Websocket API
-python_script: # Python scripts
+# https://www.home-assistant.io/integrations/wake_on_lan/
+wake_on_lan:
 
-## Frontend
+# https://www.home-assistant.io/integrations/media_player/
+media_player:
+
+# https://www.home-assistant.io/integrations/websocket_api/
+websocket_api:
+
+# https://www.home-assistant.io/integrations/python_script/
+python_script:
+
+# https://www.home-assistant.io/integrations/frontend/
 frontend: !include frontend.yaml
 
-# Text to speech
+# https://www.home-assistant.io/integrations/tts/
 tts: !include tts.yaml
 
-## Spotify
+# https://www.home-assistant.io/integrations/spotify/
 spotify: !include spotify.yaml
 
-# Speed Test - Fast.com (Netflix)
+# https://www.home-assistant.io/integrations/fastdotcom/
 fastdotcom: !include fastdotcom.yaml
 
-## Switches
+# https://www.home-assistant.io/integrations/switch/
 switch: !include_dir_list switches/
 
-## Sensors
+# https://www.home-assistant.io/integrations/sensor/
 sensor: !include_dir_list sensors/
 
-## BadNest
+# Nest hack (GitHub repo removed)
 badnest: !include badnest.yaml
 
-## Climate
+# https://www.home-assistant.io/integrations/climate/
 climate: !include_dir_list climates/
 
-## Water Heater
+# Part of BadNest
 water_heater: !include water_heater.yaml
 
-## LG TV
+# https://www.home-assistant.io/integrations/webostv/
 webostv: !include_dir_list webostvs/
 
-## Kasa / TP-Link
+# https://www.home-assistant.io/integrations/tplink/
 tplink: !include tplink.yaml
 
-## Countdown Timer
+# [Insert GitHub repo here]
 #anniversaries:
   #sensors: !include_dir_list anniversaries/
 
-## HTTP
+# https://www.home-assistant.io/integrations/http/
 http: !include http.yaml
 
-## Stream
+# https://www.home-assistant.io/integrations/stream/
 #stream:
 
-## Image Processing
+# https://www.home-assistant.io/integrations/image_processing/
 image_processing: !include_dir_list image_processing/
 
-## APC UPS
+# https://www.home-assistant.io/integrations/apcupsd/
 apcupsd: !include apcupsd.yaml
 
-## SABnzbd
+# https://www.home-assistant.io/integrations/sabnzbd/
 sabnzbd: !include sabnzbd.yaml
 
-## iOS
+# https://www.home-assistant.io/integrations/ios/
 ios: !include ios.yaml
 
-## Ombi
+# https://www.home-assistant.io/integrations/ombi/
 ombi: !include ombi.yaml
 
-## Binary Sensors
+# https://www.home-assistant.io/integrations/binary_sensor/
 binary_sensor: !include_dir_list binary_sensors/
 
-## Inputs
+# https://www.home-assistant.io/integrations/input_boolean/
 input_boolean: !include_dir_named input_booleans/
+
+# https://www.home-assistant.io/integrations/input_datetime/
 input_datetime: !include_dir_named input_datetimes/
+
+# https://www.home-assistant.io/integrations/input_text/
 input_text: !include_dir_named input_texts/
+
+# https://www.home-assistant.io/integrations/input_number/
 input_number: !include_dir_named input_numbers/
+
+# https://www.home-assistant.io/integrations/input_select/
 input_select: !include_dir_named input_selects/
 
-## Camera
+# https://www.home-assistant.io/integrations/camera/
 camera: !include_dir_list cameras/
 
-## Voice Assistants
+# https://www.home-assistant.io/integrations/alexa.smart_home/
 alexa: !include alexa.yaml
+
+# https://www.home-assistant.io/integrations/google_assistant/
 google_assistant: !include google_assistant.yaml
 
-## Lights
+# https://www.home-assistant.io/integrations/light/
 light: !include_dir_list lights/
 
-## Alerts
+# https://www.home-assistant.io/integrations/alert/
 alert: !include_dir_named alerts/
 
-## Google Calendar
+# https://www.home-assistant.io/integrations/calendar.google/
 google: !include google.yaml
 
-## HomeKit
+# https://www.home-assistant.io/integrations/homekit/
 homekit: !include homekit.yaml
 
-## Remote Home Assistant
+# (GitHub repo here)
 #remote_homeassistant: !include remote_homeassistant.yaml
 
-## HACS Components
-browser_mod:
-  prefix: "browser_"
+# (GitHub repo here)
+browser_mod: !include broswer_mod.yaml
 
-## Timers
+# https://www.home-assistant.io/integrations/timer/
 timer: !include_dir_named timers/
 
-## PyScript
-#pyscript:
-
-## Shell Commands
+# https://www.home-assistant.io/integrations/shell_command/
 shell_command: !include_dir_merge_named shell_commands/
 
-# Telegram
+# https://www.home-assistant.io/integrations/telegram_bot/
 telegram_bot: !include telegram_bot.yaml
 
 # https://www.home-assistant.io/integrations/influxdb/
