@@ -1218,33 +1218,33 @@
       message: Tumble Dryer has finished
   mode: single
 - id: '1608540479254'
-   alias: Device - IKEA Switch 1
-   description: ''
-   trigger:
-   - device_id: 28fd4502ca25475674649046c566636b
-     domain: deconz
-     platform: device
-     type: remote_button_short_press
-     subtype: turn_on
-   - device_id: 28fd4502ca25475674649046c566636b
-     domain: deconz
-     platform: device
-     type: remote_button_short_press
-     subtype: turn_off
-   condition: []
-   action:
-   - service: light.toggle
-     entity_id: light.kitchen
-   mode: single
- - id: '1608564677336'
-   alias: Action - Pre-Heat Bed
-   description: ''
-   trigger:
-   - platform: time
-     at: '22:00'
-   condition: []
-   action:
-   - service: switch.turn_on
-     data: {}
-     entity_id: switch.smart_plug_4
-   mode: single
+  alias: Device - IKEA Switch 1
+  description: ''
+  trigger:
+  - device_id: 28fd4502ca25475674649046c566636b
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  - device_id: 28fd4502ca25475674649046c566636b
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - service: light.toggle
+    entity_id: light.kitchen
+  mode: single
+- id: '1608564677336'
+  alias: Action - Pre-Heat Bed
+  description: ''
+  trigger:
+  - platform: time
+    at: '22:00'
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    entity_id: switch.smart_plug_4
+  mode: single

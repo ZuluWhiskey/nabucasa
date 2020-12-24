@@ -1,9 +1,9 @@
 platform: hp_ilo
- host: 10.0.0.7
- username: !secret zeus_ilo_username
- password: !secret zeus_ilo_password
- monitored_variables:
- #  - name: Server Health
- #    sensor_type: server_health
-   - name: Server UID Status
-     sensor_type: server_uid_status
+host: 10.0.0.7
+username: !secret zeus_ilo_username
+password: !secret zeus_ilo_password
+monitored_variables:
+#  - name: Server Health
+#    sensor_type: server_health
+  - name: Server UID Status
+    sensor_type: server_uid_status
