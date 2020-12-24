@@ -1,0 +1,10 @@
+name: Tumble Dryer Finished
+entity_id: input_boolean.tumble_dryer
+state: 'off'
+repeat: 20
+can_acknowledge: true
+# Notification Information
+title: Tumble Dryer
+message: Tumble dryer has finished
+notifiers:
+  - mobile_app_zanders_iphone

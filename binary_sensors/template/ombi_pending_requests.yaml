@@ -1,0 +1,11 @@
+platform: template
+sensors:
+  ombi_pending_requests:
+    friendly_name: "Ombi Pending Requests"
+    value_template: "{{states('sensor.ombi_pending_requests') | int > 0}}"
+    icon_template: >-
+      {% if states('sensor.ombi_pending_requests') | int > 0 %}
+        mdi:alert
+      {% else %}
+        mdi:alert-remove
+      {% endif %}

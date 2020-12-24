@@ -1,0 +1,10 @@
+name: Washing Machine Finished
+entity_id: input_boolean.washing_machine
+state: 'off'
+repeat: 20
+can_acknowledge: true
+# Notification Information
+title: Washing Machine
+message: Washing Machine has finished
+notifiers:
+  - mobile_app_zanders_iphone
