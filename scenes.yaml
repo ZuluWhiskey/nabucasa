@@ -136,6 +136,3 @@
       friendly_name: Living Room 3
       supported_features: 43
       state: 'off'
-    switch.smart_plug_2:
-      friendly_name: Christmas Tree
-      state: 'off'

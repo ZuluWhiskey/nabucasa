@@ -498,9 +498,7 @@ class GarbageCollection(RestoreEntity):
                 first_day -= relativedelta(days=look_back)
         while True:
             try:
-                next_date = await self._async_find_candidate_date(
-                    first_day
-                ) + relativedelta(days=self._offset)
+                next_date = await self._async_find_candidate_date(first_day)
             except ValueError:
                 raise
             if bool(self._holiday_in_week_move):
@@ -545,9 +543,7 @@ class GarbageCollection(RestoreEntity):
         )
         return day + relativedelta(days=skip_days)
 
-    async def _async_candidate_with_incl_excl(
-        self, day1: date, ignore_today=False
-    ) -> date:
+    async def _async_candidate_with_incl_excl(self, day1: date) -> date:
         """Find the next date starting from day1."""
         first_day = day1 - relativedelta(days=self._offset)
         i = 0
@@ -565,7 +561,7 @@ class GarbageCollection(RestoreEntity):
             expiration = (
                 self.expire_after if self.expire_after is not None else time(23, 59, 59)
             )
-            if next_date == now.date() and not ignore_today:
+            if next_date == now.date():
                 if (
                     self.last_collection is not None
                     and self.last_collection.date() == next_date
@@ -580,7 +576,7 @@ class GarbageCollection(RestoreEntity):
                 _LOGGER.debug("(%s) Skipping exclude_date %s", self._name, next_date)
                 date_ok = False
             if date_ok:
-                return next_date
+                return next_date + relativedelta(days=self._offset)
             first_day = next_date + relativedelta(days=1)
             i += 1
             if i > 365:
@@ -624,15 +620,13 @@ class GarbageCollection(RestoreEntity):
                 pass
         return ready_for_update
 
-    async def async_find_next_date(self, today: date, ignore_today=False) -> date:
+    async def async_find_next_date(self, today: date) -> date:
         """Get date within configured date range."""
         year = today.year
         month = today.month
         if self.date_inside(today):
             try:
-                next_date = await self._async_candidate_with_incl_excl(
-                    today, ignore_today
-                )
+                next_date = await self._async_candidate_with_incl_excl(today)
             except ValueError:
                 raise
             _LOGGER.debug("(%s) Next date candidate (%s)", self._name, next_date)
