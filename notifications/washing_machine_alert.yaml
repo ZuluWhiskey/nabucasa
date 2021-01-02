@@ -1,0 +1,11 @@
+name: "Washing Machine Alert"
+platform: group
+services:
+- service: mobile_app_zanders_iphone
+  data:
+    apns_headers:
+      apns-collapse-id: washing-machine
+- service: mobile_app_pixel_4
+  data:
+    tag: washing-machine
+- service: living_room_tv

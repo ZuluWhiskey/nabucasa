@@ -8,3 +8,6 @@ title: Washing Machine
 message: Washing Machine has finished
 notifiers:
   - mobile_app_zanders_iphone
+data:
+  apns_headers:
+    apns-collapse-id: washing-machine

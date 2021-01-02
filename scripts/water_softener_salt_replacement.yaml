@@ -6,7 +6,7 @@ sequence:
     message: "{{states('sensor.softener_salt_last_replaced')}}"
   service: notify.water_softener
 - data: {}
-  service: python_script.softener_average_calculation
+  service: shell_command.water_softener_average
 - data_template:
     date: "{{ as_timestamp(now())|timestamp_custom('%Y-%m-%d') }}"
   entity_id: input_datetime.softener_salt

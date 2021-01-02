@@ -149,7 +149,7 @@ homekit: !include homekit.yaml
 #remote_homeassistant: !include remote_homeassistant.yaml
 
 # (GitHub repo here)
-browser_mod: !include broswer_mod.yaml
+browser_mod: !include browser_mod.yaml
 
 # https://www.home-assistant.io/integrations/timer/
 timer: !include_dir_named timers/

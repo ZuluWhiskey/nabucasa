@@ -12,6 +12,11 @@
   - condition: template
     value_template: '{{ states.sun.sun.attributes.elevation | int < 1 }}'
   action:
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.motion_driveway
+      to: 'on'
+    continue_on_timeout: false
   - entity_id: light.porch
     service: light.turn_on
     data:
@@ -281,6 +286,9 @@
   action:
   - data:
       message: Sonarr may have something stuck in the queue
+      data:
+        apns_headers:
+          apns-collapse-id: sonarr-queue
     service: notify.zanders_devices
   mode: single
 - id: '1597590401845'
@@ -331,6 +339,9 @@
   action:
   - data:
       message: iPad Pro needs to be put on charge
+      data:
+        apns_headers:
+          apns-collapse-id: ipad-low-battery
     service: notify.mobile_app_zanders_iphone
   mode: single
 - id: '1598965198319'
@@ -820,7 +831,7 @@
   - platform: state
     entity_id: media_player.bedroom_sonos
     from: playing
-    for: 00:00:05
+    for: 00:05:00
   condition:
   - condition: template
     value_template: '{{state_attr(''media_player.bedroom_sonos'',''volume_level'')
@@ -1016,7 +1027,7 @@
   - platform: numeric_state
     entity_id: image_processing.doods_driveway
     above: '0'
-    for: 00:01:00
+    for: 00:05:00
   condition: []
   action:
   - service: homeassistant.update_entity

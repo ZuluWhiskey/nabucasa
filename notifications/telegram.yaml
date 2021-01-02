@@ -1,3 +1,3 @@
 platform: telegram
 name: Zander Telegram
-chat_id: !secret zander_chat_id
+chat_id: !secret zander_telegram

@@ -12,6 +12,9 @@ can_acknowledge: false
 # Notification Information
 title: Pending Request
 message: Ombi has a pending request
-done_message: All pending requests have been approved
+# done_message: All pending requests have been approved
 notifiers:
   - mobile_app_zanders_iphone
+data:
+  apns_headers:
+    apns-collapse-id: ombi-pending-request

@@ -9,7 +9,7 @@ file_out:
   - "/config/www/images/cameras/{{ camera_entity.split('.')[1] }}_latest.jpg"
 labels:
   - name: person
-    confidence: 90
+    confidence: 85
     area:
       # Exclude top 25% of image
       top: 0.25

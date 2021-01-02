@@ -8,3 +8,6 @@ title: Tumble Dryer
 message: Tumble dryer has finished
 notifiers:
   - mobile_app_zanders_iphone
+data:
+  apns_headers:
+    apns-collapse-id: tumble-dryer
