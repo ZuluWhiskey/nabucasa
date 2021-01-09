@@ -1,0 +1,8 @@
+platform: template
+sensors:
+  internet_connectivity:
+    friendly_name: "Internet Connectivity"
+    value_template: >-
+      {{ is_state('binary_sensor.cloudfare_dns', 'on')
+         or is_state('binary_sensor.google_dns', 'on') }}
+    device_class: connectivity
