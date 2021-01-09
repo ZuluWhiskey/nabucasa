@@ -1,0 +1,11 @@
+name: Nola Nighttime
+identifier: 'nola_nighttime'
+actions:
+  - identifier: 'NOLA_NIGHTTIME_YES'
+    title: 'Yes'
+    activationMode: background
+    destructive: false
+  - identifier: 'NOLA_NIGHTTIME_NO'
+    title: 'No' 
+    activationMode: background
+    destructive: false
