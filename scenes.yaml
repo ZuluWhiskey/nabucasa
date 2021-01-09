@@ -111,7 +111,7 @@
       - 0.311
   icon: mdi:alert
 - id: '1607535388047'
-  name: Nola Wind Down
+  name: Nola Nighttime
   entities:
     light.living_room_1:
       min_mireds: 140
@@ -136,6 +136,9 @@
       friendly_name: Living Room 3
       supported_features: 43
       state: 'off'
-    switch.smart_plug_2:
-       friendly_name: Christmas Tree
-       state: 'off'
+    input_boolean.nola_bedtime:
+      editable: false
+      friendly_name: Nola Bedtime
+      icon: mdi:sleep
+      state: 'on'
+  icon: mdi:lightbulb-on-outline

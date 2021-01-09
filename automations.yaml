@@ -1,6 +1,6 @@
 - id: '1596135870753'
-  alias: Action - Porch On at Night
-  description: Turn on the porch light when Zander or Demi comes home
+  alias: Action - Porch on in the dark
+  description: Turn on the porch light when Zander or Demi comes home and it is dark
   trigger:
   - entity_id: person.zander
     platform: state
@@ -17,19 +17,12 @@
       entity_id: binary_sensor.motion_driveway
       to: 'on'
     continue_on_timeout: false
+    timeout: 00:10:00
   - entity_id: light.porch
     service: light.turn_on
     data:
       transition: 5
       brightness_pct: 100
-  - timeout: 00:10:00
-    wait_template: '{{ is_state(''binary_sensor.hallway_sensor_motion'', ''on'') }}'
-    continue_on_timeout: true
-  - delay: 00:01:00
-  - entity_id: light.porch
-    service: light.turn_off
-    data:
-      transition: 5
   mode: single
 - id: '1596181797503'
   alias: Action - Morning, Stop Sonos
@@ -86,9 +79,12 @@
     platform: state
     to: 'on'
   condition:
+  - condition: state
+    entity_id: binary_sensor.openclose_front_door
+    state: 'off'
   - condition: template
-    value_template: '{{ (as_timestamp(now()) - as_timestamp(states.binary_sensor.hallway_sensor_motion.last_changed)
-      > 10) }}'
+    value_template: '{{ (as_timestamp(now()) - as_timestamp(states.binary_sensor.
+      openclose_front_door.last_changed) > 20) }}'
   action:
   - repeat:
       sequence:
@@ -667,9 +663,6 @@
     for: 0:{{(states('input_number.hallway_motion_timer')|int)+1}}:00
   condition:
   - condition: state
-    entity_id: input_boolean.hallway_motion
-    state: 'on'
-  - condition: state
     entity_id: light.hallway
     state: 'on'
   action:
@@ -857,12 +850,6 @@
     - condition: template
       value_template: '{{((as_timestamp(now()) - as_timestamp(state_attr(''automation.action_hallway_motion_sensor_off'',
         ''last_triggered''))) /60) | int < 5}}'
-  - condition: state
-    entity_id: input_boolean.hallway_motion
-    state: 'off'
-  - condition: state
-    entity_id: light.hallway
-    state: 'off'
   action:
   - service: input_boolean.turn_on
     data: {}
@@ -872,6 +859,9 @@
       - condition: time
         after: 08:00
         before: '23:00'
+      - condition: state
+        entity_id: input_boolean.nola_bedtime
+        state: 'off'
       sequence:
       - service: light.turn_on
         data:
@@ -882,7 +872,6 @@
     - service: light.turn_on
       data:
         brightness_pct: 2
-        transition: 1
       entity_id: light.hallway
   mode: single
 - id: '1605743100864'
@@ -943,9 +932,6 @@
     to: 'off'
     for: 0:{{states('input_number.hallway_motion_timer')|int}}:00
   condition:
-  - condition: state
-    entity_id: input_boolean.hallway_motion
-    state: 'on'
   - condition: state
     entity_id: light.hallway
     state: 'on'
@@ -1258,4 +1244,101 @@
   - service: switch.turn_on
     data: {}
     entity_id: switch.smart_plug_4
+  mode: single
+- id: '1609623427578'
+  alias: Notification - Nola Nighttime
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:00'
+  condition: []
+  action:
+  - service: notify.mobile_app_zanders_iphone
+    data:
+      title: Nola Nighttime
+      message: Would you like to activate nighttime mode for Nola?
+      data:
+        push:
+          category: nola_nighttime
+  - service: notify.mobile_app_pixel_4
+    data:
+      title: Nola Nighttime
+      message: Would you like to activate nighttime mode?
+      data:
+        sticky: true
+        actions:
+        - action: NOLA_NIGHTTIME_YES
+          title: 'Yes'
+        - action: NOLA_NIGHTTIME_NO
+          title: 'No'
+  mode: single
+- id: '1609777228283'
+  alias: Actionable Notification - Nola Nighttime
+  description: ''
+  trigger:
+  - platform: event
+    event_type: ios.notification_action_fired
+    event_data:
+      actionName: NOLA_NIGHTTIME_YES
+  - platform: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: NOLA_NIGHTTIME_YES
+  condition: []
+  action:
+  - service: scene.turn_on
+    data: {}
+    entity_id: scene.nola_wind_down
+  mode: single
+- id: '1609871674019'
+  alias: Action - Porch Light On
+  description: Turn on the porch light when the front door is opened and it’s dark
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.openclose_front_door
+    to: 'on'
+  condition:
+  - condition: template
+    value_template: '{{ state_attr(''sun.sun'',''elevation'') | int < 1 }}'
+  - condition: state
+    entity_id: light.porch
+    state: 'off'
+  action:
+  - service: light.turn_on
+    data:
+      brightness_pct: 100
+      transition: 2
+    entity_id: light.porch
+  mode: single
+- id: '1609874115948'
+  alias: Action - Porch Light Off
+  description: Turn off the porch light when the front door has been shut for X minutes
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.openclose_front_door
+    to: 'off'
+    from: 'on'
+    for: 00:01:00
+  condition: []
+  action:
+  - service: light.turn_off
+    entity_id: light.porch
+    data:
+      transition: 5
+  mode: single
+- id: '1610225820219'
+  alias: Porch off test
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.openclose_front_door
+    from: 'on'
+    to: 'off'
+    for: 00:00:10
+  condition: []
+  action:
+  - service: light.turn_off
+    data:
+      transition: 5
+    entity_id: light.porch
   mode: single

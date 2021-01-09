@@ -101,7 +101,7 @@ apcupsd: !include apcupsd.yaml
 sabnzbd: !include sabnzbd.yaml
 
 # https://www.home-assistant.io/integrations/ios/
-ios: !include ios.yaml
+ios: !include ios/ios.yaml
 
 # https://www.home-assistant.io/integrations/ombi/
 ombi: !include ombi.yaml
