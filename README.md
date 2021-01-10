@@ -20,7 +20,7 @@
 [home-assistant]: https://home-assistant.io
 [issue]: https://github.com/zuluwhiskey/nabucasa/issues
 [license-shield]: https://img.shields.io/github/license/zuluwhiskey/nabucasa.svg
-[maintenance-shield]: https://img.shields.io/maintenance/yes/2020.svg
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2021.svg
 [last-commit-shield]: https://img.shields.io/github/last-commit/zuluwhiskey/nabucasa.svg
 [stars-shield]: https://img.shields.io/github/stars/zuluwhiskey/nabucasa.svg?style=social&label=Stars
 [forks-shield]: https://img.shields.io/github/forks/zuluwhiskey/nabucasa.svg?style=social&label=Forks
