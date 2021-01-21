@@ -162,3 +162,12 @@ telegram_bot: !include telegram_bot.yaml
 
 # https://www.home-assistant.io/integrations/influxdb/
 influxdb: !include influxdb.yaml
+
+# https://www.home-assistant.io/integrations/manual/
+# alarm_control_panel: !include alarm_control_panel.yaml
+
+# https://www.home-assistant.io/docs/mqtt/broker/
+mqtt: !include mqtt.yaml
+
+# https://www.home-assistant.io/integrations/counter/
+counter: !include_dir_named counters/

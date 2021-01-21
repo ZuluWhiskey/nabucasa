@@ -4,3 +4,4 @@ sensors:
     friendly_name: 'Uptime Minutes'
     value_template: "{{((as_timestamp(now()) - as_timestamp(states('sensor.time_online'))) /60) | int}}"
     unit_of_measurement: "minutes"
+    icon_template: mdi:clock

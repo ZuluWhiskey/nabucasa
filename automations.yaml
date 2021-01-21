@@ -29,7 +29,7 @@
   description: Pause the Sonos speaker when someone comes downstairs in the morning
   trigger:
   - platform: state
-    entity_id: binary_sensor.hallway_sensor_motion
+    entity_id: binary_sensor.hallway_motion
     to: 'on'
   condition:
   - after: 08:00:00
@@ -92,7 +92,7 @@
           entity_id: image_processing.doods_driveway
         entity_id: image_processing.doods_driveway
         service: image_processing.scan
-      - delay: 00:00:02
+      - delay: 00:00:04
       while:
       - condition: and
         conditions:
@@ -658,13 +658,18 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.hallway_sensor_motion
+    entity_id: binary_sensor.hallway_motion
     to: 'off'
     for: 0:{{(states('input_number.hallway_motion_timer')|int)+1}}:00
   condition:
-  - condition: state
-    entity_id: light.hallway
-    state: 'on'
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: light.hallway
+      state: 'on'
+    - condition: state
+      entity_id: input_boolean.hallway_motion
+      state: 'on'
   action:
   - service: input_boolean.turn_off
     data: {}
@@ -840,7 +845,7 @@
   description: Turn on the Hallway light when motion is detected
   trigger:
   - platform: state
-    entity_id: binary_sensor.hallway_sensor_motion
+    entity_id: binary_sensor.hallway_motion
     to: 'on'
   condition:
   - condition: or
@@ -850,6 +855,9 @@
     - condition: template
       value_template: '{{((as_timestamp(now()) - as_timestamp(state_attr(''automation.action_hallway_motion_sensor_off'',
         ''last_triggered''))) /60) | int < 5}}'
+    - condition: state
+      entity_id: input_boolean.hallway_motion
+      state: 'on'
   action:
   - service: input_boolean.turn_on
     data: {}
@@ -928,7 +936,7 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.hallway_sensor_motion
+    entity_id: binary_sensor.hallway_motion
     to: 'off'
     for: 0:{{states('input_number.hallway_motion_timer')|int}}:00
   condition:
@@ -947,7 +955,7 @@
   description: If motion is detected whilst the lights are dimmed
   trigger:
   - platform: state
-    entity_id: binary_sensor.hallway_sensor_motion
+    entity_id: binary_sensor.hallway_motion
     to: 'on'
   condition:
   - condition: state
@@ -1231,7 +1239,8 @@
   condition: []
   action:
   - service: light.toggle
-    entity_id: light.kitchen
+    entity_id: light.kitchen_mqtt
+  - delay: '3'
   mode: single
 - id: '1608564677336'
   alias: Action - Pre-Heat Bed
@@ -1251,7 +1260,10 @@
   trigger:
   - platform: time
     at: '21:00'
-  condition: []
+  condition:
+  - condition: state
+    entity_id: input_boolean.nola_bedtime
+    state: 'off'
   action:
   - service: notify.mobile_app_zanders_iphone
     data:
@@ -1323,8 +1335,7 @@
   action:
   - service: light.turn_off
     entity_id: light.porch
-    data:
-      transition: 5
+    data: {}
   mode: single
 - id: '1610225820219'
   alias: Porch off test
@@ -1341,4 +1352,81 @@
     data:
       transition: 5
     entity_id: light.porch
+  mode: single
+- id: '1610458890692'
+  alias: Action - Kitchen light off
+  description: Turn off Kitchen light after X minutes without motion
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.kitchen_motion
+    to: 'off'
+    for: 00:05:00
+  condition:
+  - condition: state
+    entity_id: light.kitchen_mqtt
+    state: 'on'
+  action:
+  - service: light.turn_off
+    entity_id: light.kitchen_mqtt
+  mode: single
+- id: '1610554271443'
+  alias: Action - Turn off Nola Nighttime Boolean
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sun.sun
+    to: above_horizon
+    for: 00:30:00
+  condition:
+  - condition: state
+    entity_id: input_boolean.nola_bedtime
+    state: 'on'
+  action:
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.nola_bedtime
+  mode: single
+- id: '1610555772528'
+  alias: Notification - Exterior roor left open
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.openclose_kitchen_door
+    to: 'on'
+    for: 00:10:00
+  - platform: state
+    entity_id: binary_sensor.openclose_patio_door
+    to: 'on'
+    for: 00:10:00
+  - platform: state
+    entity_id: binary_sensor.openclose_front_door
+    to: 'on'
+    for: 00:10:00
+  condition:
+  - condition: or
+    conditions:
+    - condition: template
+      value_template: '{{ is_state_attr(''climate.hallway_thermostat'',''hvac_action'',''heating'')
+        }}'
+    - condition: template
+      value_template: '{{ float(state_attr(''weather.accuweather_home'',''temperature''))
+        < float(states(''sensor.hallway_thermostat''))}} '
+  action:
+  - service: notify.zanders_devices
+    data:
+      message: '{{trigger.entity_id}} left open for 10 minutes'
+  mode: single
+- id: '1610910097508'
+  alias: MQTT Announce on HA Startup
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.uptime_minutes
+    above: '1'
+  condition: []
+  action:
+  - service: mqtt.publish
+    data:
+      topic: shellies/command
+      payload: announce
   mode: single

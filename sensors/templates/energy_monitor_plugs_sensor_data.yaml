@@ -1,37 +1,45 @@
 platform: template
 sensors:
-  # Plug 1
+  # Plug 1 - Tumble Dryer
   energy_monitor_plug_1_amps:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Current"
     value_template: "{{ state_attr('switch.energy_monitor_plug_1','current_a') | float }}"
     unit_of_measurement: 'A'
+    icon_template: mdi:lightning-bolt-outline
   energy_monitor_plug_1_watts:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Current Consumption"
     value_template: "{{ state_attr('switch.energy_monitor_plug_1','current_power_w') | float }}"
     unit_of_measurement: 'W'
+    icon_template: mdi:lightning-bolt-outline
   energy_monitor_plug_1_total_kwh:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Total Consumption"
     value_template: "{{ state_attr('switch.energy_monitor_plug_1','total_energy_kwh') | float }}"
     unit_of_measurement: 'kWh'
+    icon_template: mdi:lightning-bolt-outline
   energy_monitor_plug_1_volts:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_1','friendly_name') }} Voltage"
     value_template: "{{ state_attr('switch.energy_monitor_plug_1','voltage') | float }}"
     unit_of_measurement: 'V'
+    icon_template: mdi:lightning-bolt-outline
 
-  # Plug 2
+  # Plug 2 - Washing Machine
   energy_monitor_plug_2_amps:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Current"
     value_template: "{{ state_attr('switch.energy_monitor_plug_2','current_a') | float }}"
     unit_of_measurement: 'A'
+    icon_template: mdi:lightning-bolt-outline
   energy_monitor_plug_2_watts:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Current Consumption"
     value_template: "{{ state_attr('switch.energy_monitor_plug_2','current_power_w') | float }}"
     unit_of_measurement: 'W'
+    icon_template: mdi:lightning-bolt-outline
   energy_monitor_plug_2_total_kwh:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Total Consumption"
     value_template: "{{ state_attr('switch.energy_monitor_plug_2','total_energy_kwh') | float }}"
     unit_of_measurement: 'kWh'
+    icon_template: mdi:lightning-bolt-outline
   energy_monitor_plug_2_volts:
     friendly_name_template: "{{ state_attr('switch.energy_monitor_plug_2','friendly_name') }} Voltage"
     value_template: "{{ state_attr('switch.energy_monitor_plug_2','voltage') | float }}"
     unit_of_measurement: 'V'
+    icon_template: mdi:lightning-bolt-outline

@@ -1,0 +1,11 @@
+- platform: manual
+  name: "Alarm (No Motion)"
+  code: !secret alarm_code
+  arming_time:
+  delay_time:
+  trigger_time:
+  disarmed:
+    trigger_time:
+  armed_home:
+    arming_time:
+    delay_time: 

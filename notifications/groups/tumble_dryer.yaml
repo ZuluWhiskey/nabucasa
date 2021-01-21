@@ -1,0 +1,11 @@
+name: "Tumble Dryer Alert"
+platform: group
+services:
+- service: mobile_app_zanders_iphone
+  data:
+    apns_headers:
+      apns-collapse-id: tumble-dryer
+- service: mobile_app_pixel_4
+  data:
+    tag: tumble-dryer
+- service: living_room_tv

@@ -67,48 +67,48 @@
 - id: '1599222742965'
   name: Red Alert
   entities:
-    light.hallway_ceiling:
-      brightness: 255
-      effect: none
+    light.hallway:
+      min_mireds: 153
+      max_mireds: 500
       effect_list:
       - colorloop
-      - random
-      friendly_name: Hallway Ceiling
+      brightness: 254
+      hs_color:
+      - 10.672
+      - 99.216
+      rgb_color:
+      - 255
+      - 46
+      - 1
+      xy_color:
+      - 0.687
+      - 0.31
+      is_deconz_group: true
+      all_on: true
+      friendly_name: Hallway
+      supported_features: 63
+      state: 'on'
+    light.landing:
+      min_mireds: 153
+      max_mireds: 500
+      effect_list:
+      - colorloop
+      brightness: 254
       hs_color:
       - 10.118
       - 100
-      max_mireds: 500
-      min_mireds: 153
       rgb_color:
       - 255
       - 43
       - 0
-      state: 'on'
-      supported_features: 63
       xy_color:
       - 0.689
       - 0.309
-    light.landing_ceiling:
-      brightness: 255
-      effect: none
-      effect_list:
-      - colorloop
-      - random
-      friendly_name: Landing Ceiling
-      hs_color:
-      - 10.202
-      - 96.863
-      max_mireds: 500
-      min_mireds: 153
-      rgb_color:
-      - 255
-      - 49
-      - 7
-      state: 'on'
+      is_deconz_group: true
+      all_on: true
+      friendly_name: Landing
       supported_features: 63
-      xy_color:
-      - 0.684
-      - 0.311
+      state: 'on'
   icon: mdi:alert
 - id: '1607535388047'
   name: Nola Nighttime

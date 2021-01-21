@@ -5,3 +5,4 @@ sensors:
       {{((as_timestamp(strptime(states('sensor.date'), '%d.%m.%Y'))-state_attr('input_datetime.softener_salt', 'timestamp')) | int /60/1440) | int}}
     unit_of_measurement: 'Days'
     friendly_name: 'Softener Salt'
+    icon_template: mdi:calendar
