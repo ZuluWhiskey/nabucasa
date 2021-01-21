@@ -13,7 +13,7 @@ class GarbageCollectionCard extends HTMLElement {
   _getAttributes(hass, entity_id) {
     var entityState = hass.states[entity_id];
 
-    if (entityState) {
+    if (entityState && entityState.attributes['next_date']) {
       var date_option = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
       var date_tmp = new Date(entityState.attributes['next_date']);
@@ -57,6 +57,8 @@ class GarbageCollectionCard extends HTMLElement {
       due_txt: false,
       icon_color: 'var(--paper-item-icon-color)',
       icon_size: '25px',
+      icon_cell_padding: '35px',
+      icon_cell_width: '60px',
       hass_lang_priority: false,
       hide_date: false,
       hide_days: false,
@@ -84,8 +86,8 @@ class GarbageCollectionCard extends HTMLElement {
         font-size: 120%;
       }
       .tdicon {
-        padding-left: 35px;
-        width: 60px;
+        padding-left: ${cardConfig.icon_cell_padding};
+        width: ${cardConfig.icon_cell_width};
       }
       ha-icon-button {
         color: ${cardConfig.icon_color};
@@ -139,11 +141,11 @@ class GarbageCollectionCard extends HTMLElement {
   _updateContent(attributes, hdate, hdays, hcard, duetxt, honclick) {
     const root = this.shadowRoot;
     var today = new Date()
-    var todayYYYYMMDD = today.toISOString().split("T")[0].replace(/-/g, ".");
+    var todayYYYYMMDD = today.toISOString().split("T")[0];
 
     root.getElementById('ha_icon').icon = attributes.icon;
     root.getElementById('ha_icon').className = attributes.alerted;
-    
+
     if (parseInt(attributes.days) < 2 && honclick) {
       root.getElementById('ha_card').addEventListener('click', this._ackGarbageOut.bind(this));
     }
@@ -160,12 +162,12 @@ class GarbageCollectionCard extends HTMLElement {
     this.style.display = hcard ? "none" : "block";
 
     if ( attributes.last_collection != null ) {
-      if ( new Date(todayYYYYMMDD).getTime() === new Date(new Date(attributes.last_collection).toISOString().split("T")[0].replace(/-/g, ".")).getTime() ) {
+      if ( new Date(todayYYYYMMDD).getTime() === new Date(new Date(attributes.last_collection).toISOString().split("T")[0]).getTime() ) {
       // acknowledged today
         this.style.display = "none";
       } else {
         // acknowledged yesterday; 172800 = 60*60*24*2 (secs)
-        if ( new Date(todayYYYYMMDD).getTime() - new Date(new Date(attributes.last_collection).toISOString().split("T")[0].replace(/-/g, ".")).getTime() < 172800000 ) {
+        if ( new Date(todayYYYYMMDD).getTime() - new Date(new Date(attributes.last_collection).toISOString().split("T")[0]).getTime() < 172800000 ) {
           if ( parseInt(attributes.days) < 1 ) {
             // acknowledged yesterday which was the day before the date of collection, so the collection is today
             this.style.display = "none";
@@ -216,20 +218,20 @@ class GarbageCollectionCard extends HTMLElement {
     }
 
     let attributes = this._getAttributes(hass, config.entity);
-    
+
     if (hide_before > -1) {
       hide_card = attributes.days > hide_before;
     }
 
     this._stateObj = this._config.entity in hass.states ? hass.states[this._config.entity] : null;
-    
+
     if (this._stateObj === null) {
       var entityNotFoundMessage = this._label('ui.panel.lovelace.warning.entity_not_found', 'Entity not found: {entity}');
-      entityNotFoundMessage = entityNotFoundMessage.replace('{entity}', this._config.entity);  
+      entityNotFoundMessage = entityNotFoundMessage.replace('{entity}', this._config.entity);
       this._updateContentWithWarning(entityNotFoundMessage);
       return;
     }
-    
+
     if (isNaN(this._stateObj.state)) {
       hide_days = true;
       hide_date = false;
@@ -266,7 +268,7 @@ class GarbageCollectionCard extends HTMLElement {
           }
         }
       } else { // attributes.days >= 2
-        if ( typeof this.translationJSONobj != "undefined" 
+        if ( typeof this.translationJSONobj != "undefined"
           && typeof this.translationJSONobj.other['in_days'] !== "undefined" ) {
             attributes.days = this.translationJSONobj.other['in_days'].replace('DAYS', attributes.days);
         } else {
