@@ -1,0 +1,5 @@
+name: Washing Machine
+initial: 0
+restore: true
+step: 1
+icon: mdi:washing-machine
