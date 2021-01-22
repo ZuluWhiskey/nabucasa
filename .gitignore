@@ -11,6 +11,7 @@
 # File types to ignore:
 *.log
 *.db
+*.db*
 
 # Folders to ignore:
 .storage

@@ -1,0 +1,10 @@
+platform: template
+sensors:
+  bin_collection_due:
+    friendly_name: "Bin Collection Due"
+    value_template: >-
+       {{ is_state('sensor.general_waste', 'tomorrow')
+          or is_state('sensor.general_waste', 'today')
+          or is_state('sensor.recycling', 'tomorrow')
+          or is_state('sensor.recycling', 'today') }}
+    icon_template: mdi:trash-can
