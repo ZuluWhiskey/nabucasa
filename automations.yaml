@@ -85,6 +85,9 @@
   - condition: template
     value_template: '{{ (as_timestamp(now()) - as_timestamp(states.binary_sensor.
       openclose_front_door.last_changed) > 20) }}'
+  - condition: state
+    entity_id: binary_sensor.openclose_garage_door
+    state: 'off'
   action:
   - repeat:
       sequence:
@@ -92,7 +95,7 @@
           entity_id: image_processing.doods_driveway
         entity_id: image_processing.doods_driveway
         service: image_processing.scan
-      - delay: 00:00:04
+      - delay: 00:00:02
       while:
       - condition: and
         conditions:
@@ -1139,12 +1142,9 @@
     above: '12'
   condition:
   - condition: state
-    entity_id: input_boolean.washing_machine
+    entity_id: binary_sensor.washing_machine_running
     state: 'off'
   action:
-  - service: input_boolean.turn_on
-    data: {}
-    entity_id: input_boolean.washing_machine
   - service: input_datetime.set_datetime
     data:
       time: '{{ now().strftime(''%H:%M:%S'') }}'
@@ -1161,20 +1161,20 @@
     for: 00:00:30
   condition:
   - condition: state
-    entity_id: input_boolean.washing_machine
+    entity_id: binary_sensor.washing_machine_running
     state: 'on'
   action:
-  - service: input_boolean.turn_off
+  - service: input_boolean.turn_on
     data: {}
-    entity_id: input_boolean.washing_machine
+    entity_id: input_boolean.washing_machine_finished
   - service: input_datetime.set_datetime
     data:
       time: '{{( (now().timestamp()) - (as_timestamp(states(''input_datetime.washing_machine_start'')))
         )| float | timestamp_custom(''%H:%M:%S'',false) }}'
     entity_id: input_datetime.washing_machine_previous_cycle
-  - service: notify.zanders_devices
-    data:
-      message: Washing machine has finished
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.energy_monitor_plug_2
   mode: single
 - id: '1607700097104'
   alias: Action - Tumble Dryer - Cycle Start
@@ -1185,12 +1185,9 @@
     above: '20'
   condition:
   - condition: state
-    entity_id: input_boolean.tumble_dryer
     state: 'off'
+    entity_id: binary_sensor.tumble_dryer_running
   action:
-  - service: input_boolean.turn_on
-    data: {}
-    entity_id: input_boolean.tumble_dryer
   - service: input_datetime.set_datetime
     data:
       time: '{{ now().strftime("%H:%M:%S") }}'
@@ -1207,20 +1204,20 @@
     for: 00:00:30
   condition:
   - condition: state
-    entity_id: input_boolean.tumble_dryer
     state: 'on'
+    entity_id: binary_sensor.tumble_dryer_running
   action:
-  - service: input_boolean.turn_off
+  - service: input_boolean.turn_on
     data: {}
-    entity_id: input_boolean.tumble_dryer
+    entity_id: input_boolean.tumble_dryer_finished
   - service: input_datetime.set_datetime
     data:
       time: '{{( (now().timestamp()) - (as_timestamp(states(''input_datetime.tumble_dryer_start'')))
         )| float | timestamp_custom(''%H:%M:%S'',false) }}'
     entity_id: input_datetime.tumble_dryer_previous_cycle
-  - service: notify.zanders_devices
-    data:
-      message: Tumble Dryer has finished
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.energy_monitor_plug_1
   mode: single
 - id: '1608540479254'
   alias: Device - IKEA Switch 1
@@ -1420,9 +1417,8 @@
   alias: MQTT Announce on HA Startup
   description: ''
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.uptime_minutes
-    above: '1'
+  - platform: homeassistant
+    event: start
   condition: []
   action:
   - service: mqtt.publish

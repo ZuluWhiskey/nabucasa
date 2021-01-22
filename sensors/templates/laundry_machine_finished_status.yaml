@@ -1,0 +1,14 @@
+platform: template
+sensors:
+  laundry_machine_finished_status:
+    friendly_name: "Laundry Machine Finished Status"
+    value_template: >-
+      {% if is_state('input_boolean.washing_machine_finished','on') and is_state('input_boolean.tumble_dryer_finished','off') %}
+        "Washing Machine"
+      {% elif is_state('input_boolean.tumble_dryer_finished','on') and is_state('input_boolean.washing_machine_finished','off') %}
+        "Tumble Dryer"
+      {% elif is_state('input_boolean.washing_machine_finished','on') and is_state('input_boolean.tumble_dryer_finished','on') %}
+        "Washing Machine & Tumble Dryer"
+      {% else %}
+        "Neither machine is finished"
+      {% endif %}

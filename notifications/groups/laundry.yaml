@@ -1,0 +1,11 @@
+name: "Laundry Alert"
+platform: group
+services:
+- service: mobile_app_zanders_iphone
+  data:
+    apns_headers:
+      apns-collapse-id: laundry
+- service: mobile_app_pixel_4
+  data:
+    tag: laundry
+- service: living_room_tv

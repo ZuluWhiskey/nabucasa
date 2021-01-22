@@ -1,0 +1,10 @@
+name: Laundry Has Finished
+entity_id: binary_sensor.laundry_status
+state: 'on'
+repeat: 20
+can_acknowledge: true
+# Notification Information
+title: "{{states('sensor.laundry_machine_finished_status')}} finished"
+message: "{{states('sensor.laundry_machine_finished_status')}} - Ready to be emptied"
+notifiers:
+  - laundry
