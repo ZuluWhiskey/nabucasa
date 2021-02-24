@@ -1,0 +1,1 @@
+sensors: !include_dir_list anniversaries/

@@ -240,30 +240,28 @@
     entity_id: sensor.tautulli
     above: '0'
     attribute: wan_bandwidth
+  - platform: state
+    entity_id: input_boolean.sabnzbd_override
   condition: []
   action:
   - choose:
     - conditions:
-      - condition: and
-        conditions:
-        - condition: state
-          entity_id: sensor.sabnzbd_status
-          state: Downloading
-        - condition: numeric_state
-          entity_id: sensor.tautulli
-          attribute: wan_bandwidth
-          above: '0'
+      - condition: state
+        entity_id: sensor.sabnzbd_status
+        state: Downloading
+      - condition: numeric_state
+        entity_id: sensor.tautulli
+        above: '0'
+        attribute: wan_bandwidth
+      - condition: state
+        entity_id: input_boolean.sabnzbd_override
+        state: 'off'
       sequence:
       - data: {}
         service: sabnzbd.pause
-    - conditions:
-      - condition: state
-        entity_id: sensor.tautulli
-        state: '0'
-      sequence:
-      - data: {}
-        service: sabnzbd.resume
-    default: []
+    default:
+    - data: {}
+      service: sabnzbd.resume
   mode: restart
 - id: '1597422179076'
   alias: Notification - Sonarr Queue Check
@@ -298,9 +296,9 @@
     platform: state
     to: home
   condition:
-  - condition: state
+  - condition: numeric_state
     entity_id: sensor.uptime_minutes
-    state: '>0.5'
+    above: '1'
   action:
   - data:
       message: Sharon has arrived at the house
@@ -678,8 +676,6 @@
     data: {}
     entity_id: input_boolean.hallway_motion
   - service: light.turn_off
-    data:
-      transition: 5
     entity_id: light.hallway
   mode: single
 - id: '1602516801722'
@@ -753,7 +749,7 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: device_tracker.btp227840
+    entity_id: device_tracker.webtop_10
     from: home
     to: not_home
     for: 00:05:00
@@ -1137,32 +1133,30 @@
   alias: Action - Washing Machine - Cycle Start
   description: ''
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.energy_monitor_plug_2_watts
-    above: '12'
-  condition:
-  - condition: state
+  - platform: state
     entity_id: binary_sensor.washing_machine_running
-    state: 'off'
+    to: 'on'
+    from: 'off'
+  condition: []
   action:
   - service: input_datetime.set_datetime
     data:
       time: '{{ now().strftime(''%H:%M:%S'') }}'
       date: '{{ now().strftime(''%Y-%m-%d'') }}'
     entity_id: input_datetime.washing_machine_start
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.washing_machine_finished
   mode: single
 - id: '1607699929230'
   alias: Action - Washing Machine - Cycle Stop
   description: ''
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.energy_monitor_plug_2_watts
-    below: '3'
-    for: 00:00:30
-  condition:
-  - condition: state
+  - platform: state
     entity_id: binary_sensor.washing_machine_running
-    state: 'on'
+    from: 'on'
+    to: 'off'
+  condition: []
   action:
   - service: input_boolean.turn_on
     data: {}
@@ -1175,37 +1169,41 @@
   - service: switch.turn_off
     data: {}
     entity_id: switch.energy_monitor_plug_2
+  - service: counter.increment
+    data: {}
+    entity_id: counter.washing_machine
   mode: single
 - id: '1607700097104'
   alias: Action - Tumble Dryer - Cycle Start
   description: ''
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.energy_monitor_plug_1_watts
-    above: '20'
-  condition:
-  - condition: state
-    state: 'off'
+  - platform: state
     entity_id: binary_sensor.tumble_dryer_running
+    to: 'on'
+    from: 'off'
+  condition: []
   action:
   - service: input_datetime.set_datetime
     data:
       time: '{{ now().strftime("%H:%M:%S") }}'
       date: '{{ now().strftime("%Y-%m-%d") }}'
     entity_id: input_datetime.tumble_dryer_start
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.washing_machine_finished
+  - service: input_boolean.turn_off
+    data: {}
+    entity_id: input_boolean.tumble_dryer_finished
   mode: single
 - id: '1607700286008'
   alias: Action - Tumble Dryer - Cycle Stop
   description: ''
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.energy_monitor_plug_1_watts
-    below: '1'
-    for: 00:00:30
-  condition:
-  - condition: state
-    state: 'on'
+  - platform: state
     entity_id: binary_sensor.tumble_dryer_running
+    to: 'off'
+    from: 'on'
+  condition: []
   action:
   - service: input_boolean.turn_on
     data: {}
@@ -1218,6 +1216,9 @@
   - service: switch.turn_off
     data: {}
     entity_id: switch.energy_monitor_plug_1
+  - service: counter.increment
+    data: {}
+    entity_id: counter.tumble_dryer
   mode: single
 - id: '1608540479254'
   alias: Device - IKEA Switch 1
@@ -1236,7 +1237,7 @@
   condition: []
   action:
   - service: light.toggle
-    entity_id: light.kitchen_mqtt
+    entity_id: light.kitchen
   - delay: '3'
   mode: single
 - id: '1608564677336'
@@ -1360,11 +1361,11 @@
     for: 00:05:00
   condition:
   - condition: state
-    entity_id: light.kitchen_mqtt
+    entity_id: light.kitchen
     state: 'on'
   action:
   - service: light.turn_off
-    entity_id: light.kitchen_mqtt
+    entity_id: light.kitchen
   mode: single
 - id: '1610554271443'
   alias: Action - Turn off Nola Nighttime Boolean
@@ -1425,4 +1426,32 @@
     data:
       topic: shellies/command
       payload: announce
+  mode: single
+- id: '1612026237074'
+  alias: Action - Living Room Match Colour Temperature
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: light.living_room_2
+    to: 'on'
+    for: 00:00:1
+  - platform: state
+    entity_id: light.living_room_3
+    to: 'on'
+    for: 00:00:01
+  condition:
+  - condition: state
+    entity_id: light.living_room_1
+    state: 'on'
+  - condition: state
+    entity_id: light.living_room_2
+    state: 'on'
+  - condition: state
+    entity_id: light.living_room_3
+    state: 'on'
+  action:
+  - service: light.turn_on
+    data:
+      color_temp: '{{ state_attr("light.living_room_2","color_temp") | int }}'
+    entity_id: light.living_room_1
   mode: single

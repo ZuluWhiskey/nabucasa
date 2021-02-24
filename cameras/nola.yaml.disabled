@@ -1,0 +1,7 @@
+platform: generic
+name: Nola Generic
+still_image_url: https://192.168.1.2/snap.jpeg
+stream_source: rtsp://192.168.1.15:88/videoMain
+username: !secret foscam_username
+password: !secret foscam_password
+verify_ssl: false

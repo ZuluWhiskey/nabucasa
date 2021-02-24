@@ -1,4 +1,4 @@
 platform: my_unifi
 username: !secret unifi_username
 password: !secret unifi_password
-url: 'https://10.0.0.5:8443'
+url: 'https://10.0.0.5:443'

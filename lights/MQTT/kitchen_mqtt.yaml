@@ -1,10 +1,10 @@
 platform: mqtt
-name: "Kitchen MQTT"
+name: "Kitchen"
 command_topic: "shellies/kitchen/relay/0/command"
 state_topic: "shellies/kitchen/relay/0"
 payload_on: "on"
 payload_off: "off"
-retain: true
+retain: false
 qos: 1
 availability_topic: "shellies/kitchen/online"
 payload_available: "true"
