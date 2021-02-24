@@ -3,7 +3,7 @@ sensors:
   washing_machine_running:
     friendly_name: "Washing Machine Running"
     delay_off:
-      seconds: 30
+      minutes: 1
     value_template: >-
-      {{ states('sensor.energy_monitor_plug_2_watts') | float > 12 }}
+      {{ states('sensor.energy_monitor_plug_2_watts') | float > 5 }}
 

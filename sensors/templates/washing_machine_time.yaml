@@ -3,7 +3,7 @@ sensors:
   washing_machine_time:
     friendly_name: 'Washing Machine Time Elapsed'
     value_template: >-
-      {% if is_state('input_boolean.washing_machine', 'on') %}
+      {% if is_state('binary_sensor.washing_machine_running', 'on') %}
         {{( (now().timestamp()) - (as_timestamp(states('input_datetime.washing_machine_start'))) )| float | timestamp_custom('%H:%M:%S',false) }}
       {% else %}
         Previous cycle: {{states('input_datetime.washing_machine_previous_cycle')}}

@@ -4,7 +4,7 @@ state: 'on'
 repeat: 20
 can_acknowledge: true
 # Notification Information
-title: "{{states('sensor.laundry_machine_finished_status')}} finished"
-message: "{{states('sensor.laundry_machine_finished_status')}} - Ready to be emptied"
+title: "{{states('sensor.laundry_finished_status')}} finished"
+message: "{{states('sensor.laundry_finished_status')}} - Ready to be emptied"
 notifiers:
-  - laundry
+  - laundry_alert

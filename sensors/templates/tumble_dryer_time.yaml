@@ -3,7 +3,7 @@ sensors:
   tumble_dryer_time:
     friendly_name: 'Tumble Dryer Time Elapsed'
     value_template: >-
-      {% if is_state('input_boolean.tumble_dryer', 'on') %}
+      {% if is_state('binary_sensor.tumble_dryer_running', 'on') %}
         {{( (now().timestamp()) - (as_timestamp(states('input_datetime.tumble_dryer_start'))) )| float | timestamp_custom('%H:%M:%S',false) }}
       {% else %}
         Previous cycle: {{states('input_datetime.tumble_dryer_previous_cycle')}}
