@@ -10,6 +10,7 @@ import io
 import keyword
 import logging
 import sys
+import weakref
 
 import yaml
 
@@ -40,6 +41,18 @@ BUILTIN_EXCLUDE = {
     "open",
     "print",
 }
+
+TRIG_DECORATORS = {
+    "time_trigger",
+    "state_trigger",
+    "event_trigger",
+    "mqtt_trigger",
+    "state_active",
+    "time_active",
+    "task_unique",
+}
+
+ALL_DECORATORS = TRIG_DECORATORS.union({"service"})
 
 
 def ast_eval_exec_factory(ast_ctx, mode):
@@ -244,6 +257,7 @@ class EvalFunc:
         self.decorators = []
         self.global_names = set()
         self.nonlocal_names = set()
+        self.local_names = None
         self.local_sym_table = {}
         self.doc_string = ast.get_docstring(func_def)
         self.num_posn_arg = len(self.func_def.args.args) - len(self.defaults)
@@ -280,19 +294,20 @@ class EvalFunc:
             "event_trigger",
             "mqtt_trigger",
         }
-        trig_decorators = {
-            "time_trigger",
-            "state_trigger",
-            "event_trigger",
-            "mqtt_trigger",
-            "state_active",
-            "time_active",
-            "task_unique",
+        arg_check = {
+            "event_trigger": {"arg_cnt": {1, 2}},
+            "mqtt_trigger": {"arg_cnt": {1, 2}},
+            "state_active": {"arg_cnt": {1}},
+            "state_trigger": {"arg_cnt": {"*"}, "type": {list, set}},
+            "task_unique": {"arg_cnt": {1}},
+            "time_active": {"arg_cnt": {0, "*"}},
+            "time_trigger": {"arg_cnt": {0, "*"}},
         }
+
         decorator_used = set()
         for dec in self.decorators:
             dec_name, dec_args, dec_kwargs = dec[0], dec[1], dec[2]
-            if dec_name in decorator_used:
+            if dec_name in decorator_used and "*" not in arg_check.get(dec_name, {"arg_cnt": {}})["arg_cnt"]:
                 self.logger.error(
                     "%s defined in %s: decorator %s repeated; ignoring decorator",
                     self.name,
@@ -303,14 +318,17 @@ class EvalFunc:
             decorator_used.add(dec_name)
             if dec_name in trig_decorators_reqd:
                 got_reqd_dec = True
-            if dec_name in trig_decorators:
+            if dec_name in TRIG_DECORATORS:
                 if dec_name not in trig_args:
                     trig_args[dec_name] = {}
                     trig_args[dec_name]["args"] = []
                 if dec_args is not None:
                     trig_args[dec_name]["args"] += dec_args
                 if dec_kwargs is not None:
-                    trig_args[dec_name]["kwargs"] = dec_kwargs
+                    if "kwargs" in trig_args[dec_name]:
+                        trig_args[dec_name]["kwargs"].update(dec_kwargs)
+                    else:
+                        trig_args[dec_name]["kwargs"] = dec_kwargs
             elif dec_name == "service":
                 if dec_args is not None:
                     self.logger.error(
@@ -372,9 +390,7 @@ class EvalFunc:
 
                     return pyscript_service_handler
 
-                Function.hass.services.async_register(
-                    DOMAIN, self.name, pyscript_service_factory(self.name, self),
-                )
+                Function.service_register(DOMAIN, self.name, pyscript_service_factory(self.name, self))
                 async_set_service_schema(Function.hass, DOMAIN, self.name, service_desc)
                 self.trigger_service = True
             else:
@@ -385,7 +401,7 @@ class EvalFunc:
                     dec_name,
                 )
 
-        for dec_name in trig_decorators:
+        for dec_name in TRIG_DECORATORS:
             if dec_name in trig_args and len(trig_args[dec_name]["args"]) == 0:
                 trig_args[dec_name]["args"] = None
 
@@ -393,15 +409,6 @@ class EvalFunc:
         # check that we have the right number of arguments, and that they are
         # strings
         #
-        arg_check = {
-            "event_trigger": {"arg_cnt": {1, 2}},
-            "mqtt_trigger": {"arg_cnt": {1, 2}},
-            "state_active": {"arg_cnt": {1}},
-            "state_trigger": {"arg_cnt": {"*"}, "type": {list, set}},
-            "task_unique": {"arg_cnt": {1}},
-            "time_active": {"arg_cnt": {0, "*"}},
-            "time_trigger": {"arg_cnt": {0, "*"}},
-        }
         for dec_name, arg_info in arg_check.items():
             arg_cnt = arg_info["arg_cnt"]
             if dec_name not in trig_args:
@@ -513,29 +520,31 @@ class EvalFunc:
             trigger.stop()
         if self.trigger_service:
             self.trigger_service = False
-            Function.hass.services.async_remove(DOMAIN, self.name)
+            Function.service_remove(DOMAIN, self.name)
 
     async def eval_decorators(self, ast_ctx):
         """Evaluate the function decorators arguments."""
-        self.decorators = []
         code_str, code_list = ast_ctx.code_str, ast_ctx.code_list
         ast_ctx.code_str, ast_ctx.code_list = self.code_str, self.code_list
+
+        dec_other = []
+        dec_trig = []
         for dec in self.func_def.decorator_list:
-            if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Name):
-                args = []
-                kwargs = {}
-                for arg in dec.args:
-                    args.append(await ast_ctx.aeval(arg))
-                for keyw in dec.keywords:
-                    kwargs[keyw.arg] = await ast_ctx.aeval(keyw.value)
-                if len(kwargs) == 0:
-                    kwargs = None
-                self.decorators.append([dec.func.id, args, kwargs])
-            elif isinstance(dec, ast.Name):
-                self.decorators.append([dec.id, None, None])
+            if (
+                isinstance(dec, ast.Call)
+                and isinstance(dec.func, ast.Name)
+                and dec.func.id in ALL_DECORATORS
+            ):
+                args = [await ast_ctx.aeval(arg) for arg in dec.args]
+                kwargs = {keyw.arg: await ast_ctx.aeval(keyw.value) for keyw in dec.keywords}
+                dec_trig.append([dec.func.id, args, kwargs if len(kwargs) > 0 else None])
+            elif isinstance(dec, ast.Name) and dec.id in ALL_DECORATORS:
+                dec_trig.append([dec.id, None, None])
             else:
-                _LOGGER.error("function %s has unexpected decorator type %s", self.name, dec)
+                dec_other.append(await ast_ctx.aeval(dec))
+
         ast_ctx.code_str, ast_ctx.code_list = code_str, code_list
+        return dec_trig, reversed(dec_other)
 
     async def resolve_nonlocals(self, ast_ctx):
         """Tag local variables and resolve nonlocals."""
@@ -554,12 +563,17 @@ class EvalFunc:
         nonlocal_names = set()
         global_names = set()
         var_names = set(args)
-        local_names = set(args)
+        self.local_names = set(args)
         for stmt in self.func_def.body:
-            self.has_closure = self.has_closure or isinstance(stmt, ast.FunctionDef)
+            self.has_closure = self.has_closure or isinstance(
+                stmt, (ast.FunctionDef, ast.ClassDef, ast.AsyncFunctionDef)
+            )
             var_names = var_names.union(
                 await ast_ctx.get_names(
-                    stmt, nonlocal_names=nonlocal_names, global_names=global_names, local_names=local_names,
+                    stmt,
+                    nonlocal_names=nonlocal_names,
+                    global_names=global_names,
+                    local_names=self.local_names,
                 )
             )
         for var_name in var_names:
@@ -570,7 +584,7 @@ class EvalFunc:
             if var_name in global_names:
                 continue
 
-            if var_name in local_names and var_name not in nonlocal_names:
+            if var_name in self.local_names and var_name not in nonlocal_names:
                 if self.has_closure:
                     self.local_sym_table[var_name] = EvalLocalVar(var_name)
                 continue
@@ -688,6 +702,7 @@ class EvalFunc:
         self.exception_long = None
         prev_func = ast_ctx.curr_func
         ast_ctx.curr_func = self
+        del args, kwargs
         for arg1 in self.func_def.body:
             val = await self.try_aeval(ast_ctx, arg1)
             if isinstance(val, EvalReturn):
@@ -717,48 +732,60 @@ class EvalFuncVar:
     def __init__(self, func):
         """Initialize instance with given EvalFunc function."""
         self.func = func
+        self.ast_ctx = None
 
     def get_func(self):
         """Return the EvalFunc function."""
         return self.func
 
+    def remove_func(self):
+        """Remove and return the EvalFunc function."""
+        func = self.func
+        self.func = None
+        return func
+
     async def call(self, ast_ctx, *args, **kwargs):
         """Call the EvalFunc function."""
         return await self.func.call(ast_ctx, *args, **kwargs)
 
+    def get_name(self):
+        """Return the function name."""
+        return self.func.get_name()
+
+    def set_ast_ctx(self, ast_ctx):
+        """Set the ast context."""
+        self.ast_ctx = ast_ctx
+
+    def get_ast_ctx(self):
+        """Return the ast context."""
+        return self.ast_ctx
+
     def __del__(self):
         """On deletion, stop any triggers for this function."""
-        self.func.trigger_stop()
+        if self.func:
+            self.func.trigger_stop()
+
+    async def __call__(self, *args, **kwargs):
+        """Call the EvalFunc function using our saved ast ctx."""
+        return await self.func.call(self.ast_ctx, *args, **kwargs)
 
 
 class EvalFuncVarClassInst(EvalFuncVar):
     """Class for a callable pyscript class instance function."""
 
-    def __init__(self, func, class_inst):
+    def __init__(self, func, ast_ctx, class_inst_weak):
         """Initialize instance with given EvalFunc function."""
         super().__init__(func)
-        self.class_inst = class_inst
-
-    async def call(self, ast_ctx, *args, **kwargs):
-        """Call the EvalFunc function."""
-        return await self.func.call(ast_ctx, self.class_inst, *args, **kwargs)
-
-
-class EvalFuncVarAstCtx:
-    """Class for a callable pyscript function with ast context."""
-
-    def __init__(self, ast_ctx, eval_func_var):
-        """Initialize instance with given EvalFunc function."""
-        self.eval_func_var = eval_func_var
         self.ast_ctx = ast_ctx
+        self.class_inst_weak = class_inst_weak
 
     async def call(self, ast_ctx, *args, **kwargs):
         """Call the EvalFunc function."""
-        return await self.eval_func_var.call(ast_ctx, *args, **kwargs)
+        return await self.func.call(ast_ctx, self.class_inst_weak(), *args, **kwargs)
 
     async def __call__(self, *args, **kwargs):
-        """Call the EvalFunc function using our saved ast ctx."""
-        return await self.eval_func_var.call(self.ast_ctx, *args, **kwargs)
+        """Call the function using our saved ast ctx and class instance."""
+        return await self.func.call(self.ast_ctx, self.class_inst_weak(), *args, **kwargs)
 
 
 class AstEval:
@@ -788,6 +815,7 @@ class AstEval:
         self.logger = None
         self.set_logger_name(logger_name if logger_name is not None else self.name)
         self.config_entry = Function.hass.data.get(DOMAIN, {}).get(CONFIG_ENTRY, {})
+        self.dec_eval_depth = 0
 
     async def ast_not_implemented(self, arg, *args):
         """Raise NotImplementedError exception for unimplemented AST types."""
@@ -804,8 +832,6 @@ class AstEval:
             val = await getattr(self, name, self.ast_not_implemented)(arg)
             if undefined_check and isinstance(val, EvalName):
                 raise NameError(f"name '{val.name}' is not defined")
-            if isinstance(val, EvalFuncVar):
-                return EvalFuncVarAstCtx(self, val)
             return val
         except Exception as err:
             if not self.exception_obj:
@@ -946,7 +972,11 @@ class AstEval:
     async def ast_classdef(self, arg):
         """Evaluate class definition."""
         bases = [(await self.aeval(base)) for base in arg.bases]
-        self.sym_table[arg.name] = EvalLocalVar(arg.name)
+        if self.curr_func and arg.name in self.curr_func.global_names:
+            sym_table_assign = self.global_sym_table
+        else:
+            sym_table_assign = self.sym_table
+        sym_table_assign[arg.name] = EvalLocalVar(arg.name)
         sym_table = {}
         self.sym_table_stack.append(self.sym_table)
         self.sym_table = sym_table
@@ -962,30 +992,75 @@ class AstEval:
         if "__init__" in sym_table:
             sym_table["__init__evalfunc_wrap__"] = sym_table["__init__"]
             del sym_table["__init__"]
-        self.sym_table[arg.name].set(type(arg.name, tuple(bases), sym_table))
+        sym_table_assign[arg.name].set(type(arg.name, tuple(bases), sym_table))
 
     async def ast_functiondef(self, arg):
         """Evaluate function definition."""
+        for dec in arg.decorator_list:
+            if isinstance(dec, ast.Name):
+                if dec.id != "pyscript_compile":
+                    continue
+                arg.decorator_list = []
+                local_var = None
+                if arg.name in self.sym_table and isinstance(self.sym_table[arg.name], EvalLocalVar):
+                    local_var = self.sym_table[arg.name]
+                code = compile(ast.Module(body=[arg], type_ignores=[]), filename=self.filename, mode="exec")
+                exec(code, self.global_sym_table, self.sym_table)  # pylint: disable=exec-used
+                if local_var:
+                    func = self.sym_table[arg.name]
+                    self.sym_table[arg.name] = local_var
+                    self.sym_table[arg.name].set(func)
+                return
+
         func = EvalFunc(arg, self.code_list, self.code_str, self.global_ctx)
         await func.eval_defaults(self)
-        await func.eval_decorators(self)
         await func.resolve_nonlocals(self)
-        await func.trigger_init()
         name = func.get_name()
-        func_var = EvalFuncVar(func)
-        if name in self.sym_table and isinstance(self.sym_table[name], EvalLocalVar):
-            self.sym_table[name].set(func_var)
+        dec_trig, dec_other = await func.eval_decorators(self)
+        self.dec_eval_depth += 1
+        for dec_func in dec_other:
+            func = await self.call_func(dec_func, None, func)
+            if isinstance(func, EvalFuncVar):
+                func = func.remove_func()
+                dec_trig += func.decorators
+        self.dec_eval_depth -= 1
+        if isinstance(func, EvalFunc):
+            func.decorators = dec_trig
+            if self.dec_eval_depth == 0:
+                func.trigger_stop()
+                await func.trigger_init()
+                func_var = EvalFuncVar(func)
+            else:
+                func_var = EvalFuncVar(func)
+            func_var.set_ast_ctx(self)
         else:
-            self.sym_table[name] = func_var
+            func_var = func
+
+        if self.curr_func and name in self.curr_func.global_names:
+            sym_table = self.global_sym_table
+        else:
+            sym_table = self.sym_table
+        if name in sym_table and isinstance(sym_table[name], EvalLocalVar):
+            sym_table[name].set(func_var)
+        else:
+            sym_table[name] = func_var
 
     async def ast_lambda(self, arg):
-        """Evaluate lambda definition."""
-        funcdef = ast.FunctionDef(
-            args=arg.args, body=[ast.Return(value=arg.body)], name="lambda", decorator_list=None,
+        """Evaluate lambda definition by compiling a regular function."""
+        name = "__lambda_defn_temp__"
+        await self.aeval(
+            ast.FunctionDef(
+                args=arg.args,
+                body=[ast.Return(value=arg.body, lineno=arg.body.lineno, col_offset=arg.body.col_offset)],
+                name=name,
+                decorator_list=[ast.Name(id="pyscript_compile", ctx=ast.Load())],
+                lineno=arg.col_offset,
+                col_offset=arg.col_offset,
+            )
         )
-        func = EvalFunc(funcdef, self.code_list, self.code_str, self.global_ctx)
-        await func.eval_defaults(self)
-        return EvalFuncVar(func)
+        func = self.sym_table[name]
+        del self.sym_table[name]
+        return func
 
     async def ast_asyncfunctiondef(self, arg):
         """Evaluate async function definition."""
@@ -1355,6 +1430,8 @@ class AstEval:
             if arg.id in self.local_sym_table:
                 return self.local_sym_table[arg.id]
             if arg.id in self.global_sym_table:
+                if self.curr_func and arg.id in self.curr_func.local_names:
+                    raise UnboundLocalError(f"local variable '{arg.id}' referenced before assignment")
                 return self.global_sym_table[arg.id]
             if arg.id in BUILTIN_AST_FUNCS_FACTORY:
                 return BUILTIN_AST_FUNCS_FACTORY[arg.id](self)
@@ -1368,7 +1445,7 @@ class AstEval:
             # a two-dot name for state.attr needs to exist
             #
             if num_dots == 1 or (num_dots == 2 and State.exist(arg.id)):
-                return await State.get(arg.id)
+                return State.get(arg.id)
             #
             # Couldn't find it, so return just the name wrapped in EvalName to
             # distinguish from a string variable value.  This is to support
@@ -1681,33 +1758,46 @@ class AstEval:
             else:
                 kwargs[kw_arg.arg] = await self.aeval(kw_arg.value)
         args = await self.eval_elt_list(arg.args)
-        arg_str = ", ".join(['"' + elt + '"' if isinstance(elt, str) else str(elt) for elt in args])
         #
         # try to deduce function name, although this only works in simple cases
         #
+        func_name = None
         if isinstance(arg.func, ast.Name):
             func_name = arg.func.id
         elif isinstance(arg.func, ast.Attribute):
             func_name = arg.func.attr
-        else:
-            func_name = "<function>"
         if isinstance(func, EvalLocalVar):
             func_name = func.get_name()
             func = func.get()
-        _LOGGER.debug("%s: calling %s(%s, %s)", self.name, func_name, arg_str, kwargs)
         return await self.call_func(func, func_name, *args, **kwargs)
 
     async def call_func(self, func, func_name, *args, **kwargs):
         """Call a function with the given arguments."""
-        if isinstance(func, (EvalFuncVar, EvalFuncVarAstCtx)):
+        if func_name is None:
+            try:
+                if isinstance(func, (EvalFunc, EvalFuncVar)):
+                    func_name = func.get_name()
+                else:
+                    func_name = func.__name__
+            except Exception:
+                func_name = "<function>"
+        arg_str = ", ".join(['"' + elt + '"' if isinstance(elt, str) else str(elt) for elt in args])
+        _LOGGER.debug("%s: calling %s(%s, %s)", self.name, func_name, arg_str, kwargs)
+        if isinstance(func, (EvalFunc, EvalFuncVar)):
             return await func.call(self, *args, **kwargs)
         if inspect.isclass(func) and hasattr(func, "__init__evalfunc_wrap__"):
             inst = func()
+            #
+            # we use weak references when we bind the method calls to the instance inst;
+            # otherwise these self references cause the object to not be deleted until
+            # it is later garbage collected
+            #
+            inst_weak = weakref.ref(inst)
             for name in inst.__dir__():
                 value = getattr(inst, name)
                 if type(value) is not EvalFuncVar:
                     continue
-                setattr(inst, name, EvalFuncVarClassInst(value.get_func(), inst))
+                setattr(inst, name, EvalFuncVarClassInst(value.get_func(), value.get_ast_ctx(), inst_weak))
             if getattr(func, "__init__evalfunc_wrap__") is not None:
                 #
                 # since our __init__ function is async, call the renamed one
@@ -1758,7 +1848,10 @@ class AstEval:
 
     async def ast_await(self, arg):
         """Evaluate await expr."""
-        return await self.aeval(arg.value)
+        coro = await self.aeval(arg.value)
+        if coro:
+            return await coro
+        return None
 
     async def get_target_names(self, lhs):
         """Recursively find all the target names mentioned in the AST tree."""
@@ -1777,7 +1870,7 @@ class AstEval:
             names.add(lhs.id)
         return names
 
-    async def get_names_set(self, arg, names, nonlocal_names=None, global_names=None, local_names=None):
+    async def get_names_set(self, arg, names, nonlocal_names, global_names, local_names):
         """Recursively find all the names mentioned in the AST tree."""
 
         cls_name = arg.__class__.__name__
@@ -1829,51 +1922,38 @@ class AstEval:
                         local_names.add(handler.name)
                         names.add(handler.name)
             elif cls_name == "Call":
-                await self.get_names_set(
-                    arg.func,
-                    names,
-                    nonlocal_names=nonlocal_names,
-                    global_names=global_names,
-                    local_names=local_names,
-                )
+                await self.get_names_set(arg.func, names, nonlocal_names, global_names, local_names)
                 for this_arg in arg.args:
-                    await self.get_names_set(
-                        this_arg,
-                        names,
-                        nonlocal_names=nonlocal_names,
-                        global_names=global_names,
-                        local_names=local_names,
-                    )
+                    await self.get_names_set(this_arg, names, nonlocal_names, global_names, local_names)
                 return
             elif cls_name in {"FunctionDef", "ClassDef", "AsyncFunctionDef"}:
                 local_names.add(arg.name)
                 names.add(arg.name)
+                for dec in arg.decorator_list:
+                    await self.get_names_set(dec, names, nonlocal_names, global_names, local_names)
+                #
+                # find unbound names from the body of the function or class
+                #
+                inner_global, inner_names, inner_local = set(), set(), set()
+                for child in arg.body:
+                    await self.get_names_set(child, inner_names, None, inner_global, inner_local)
+                for name in inner_names:
+                    if name not in inner_local and name not in inner_global:
+                        names.add(name)
                 return
             elif cls_name == "Delete":
                 for arg1 in arg.targets:
                     if isinstance(arg1, ast.Name):
                         local_names.add(arg1.id)
         for child in ast.iter_child_nodes(arg):
-            await self.get_names_set(
-                child,
-                names,
-                nonlocal_names=nonlocal_names,
-                global_names=global_names,
-                local_names=local_names,
-            )
+            await self.get_names_set(child, names, nonlocal_names, global_names, local_names)
 
     async def get_names(self, this_ast=None, nonlocal_names=None, global_names=None, local_names=None):
         """Return set of all the names mentioned in our AST tree."""
         names = set()
         this_ast = this_ast or self.ast
         if this_ast:
-            await self.get_names_set(
-                this_ast,
-                names,
-                nonlocal_names=nonlocal_names,
-                global_names=global_names,
-                local_names=local_names,
-            )
+            await self.get_names_set(this_ast, names, nonlocal_names, global_names, local_names)
         return names
 
     def parse(self, code_str, filename=None, mode="exec"):
