@@ -1,6 +1,49 @@
 # https://www.home-assistant.io/integrations/default_config/
 default_config:
 
+
+# https://www.home-assistant.io/integrations/alexa.smart_home/
+alexa: !include alexa.yaml
+
+# https://www.home-assistant.io/integrations/alert/
+alert: !include_dir_named alerts/
+
+# https://www.home-assistant.io/docs/automation/
+automation: !include automations.yaml
+
+# https://www.home-assistant.io/docs/automation/yaml/
+automation manual: !include_dir_named automations/
+
+# https://www.home-assistant.io/integrations/apcupsd/
+apcupsd: !include apcupsd.yaml
+
+# Nest hack (GitHub repo removed)
+badnest: !include badnest.yaml
+
+# https://www.home-assistant.io/integrations/binary_sensor/
+binary_sensor: !include_dir_list binary_sensors/
+
+# (GitHub repo here)
+browser_mod: !include browser_mod.yaml
+
+# https://www.home-assistant.io/integrations/camera/
+camera: !include_dir_list cameras/
+
+# https://www.home-assistant.io/integrations/climate/
+climate: !include_dir_list climates/
+
+# https://www.home-assistant.io/integrations/counter/
+counter: !include_dir_named counters/
+
+# https://www.home-assistant.io/integrations/fastdotcom/
+fastdotcom: !include integrations/fastdotcom.yaml
+
+# https://www.home-assistant.io/integrations/calendar.google/
+google: !include google.yaml
+
+# https://www.home-assistant.io/integrations/group/
+group: !include_dir_named groups/
+
 # https://www.home-assistant.io/integrations/logger/
 logger: !include logger.yaml
 
@@ -12,15 +55,6 @@ logbook: !include logbook.yaml
 
 # https://www.home-assistant.io/integrations/history/
 history: !include history.yaml
-
-# https://www.home-assistant.io/integrations/group/
-group: !include_dir_named groups/
-
-# https://www.home-assistant.io/docs/automation/
-automation: !include automations.yaml
-
-# https://www.home-assistant.io/docs/automation/yaml/
-automation manual: !include_dir_named automations/
 
 # https://www.home-assistant.io/integrations/script/
 #script: !include scripts.yaml
@@ -35,9 +69,6 @@ notify: !include_dir_list notifications/
 
 # https://www.home-assistant.io/integrations/homeassistant/
 homeassistant: !include homeassistant.yaml
-
-# https://www.home-assistant.io/integrations/wake_on_lan/
-wake_on_lan:
 
 # https://www.home-assistant.io/integrations/media_player/
 media_player:
@@ -57,45 +88,26 @@ tts: !include tts.yaml
 # https://www.home-assistant.io/integrations/spotify/
 spotify: !include spotify.yaml
 
-# https://www.home-assistant.io/integrations/fastdotcom/
-fastdotcom: !include fastdotcom.yaml
-
 # https://www.home-assistant.io/integrations/switch/
 switch: !include_dir_list switches/
 
 # https://www.home-assistant.io/integrations/sensor/
 sensor: !include_dir_list sensors/
 
-# Nest hack (GitHub repo removed)
-badnest: !include badnest.yaml
-
-# https://www.home-assistant.io/integrations/climate/
-climate: !include_dir_list climates/
-
-# Part of BadNest
-water_heater: !include water_heater.yaml
-
-# https://www.home-assistant.io/integrations/webostv/
-webostv: !include_dir_list webostvs/
-
 # https://www.home-assistant.io/integrations/tplink/
 tplink: !include tplink.yaml
 
 # [Insert GitHub repo here]
-#anniversaries:
-  #sensors: !include_dir_list anniversaries/
+#anniversaries: !include anniversaries.yaml
 
 # https://www.home-assistant.io/integrations/http/
 http: !include http.yaml
 
 # https://www.home-assistant.io/integrations/stream/
-#stream:
+stream:
 
 # https://www.home-assistant.io/integrations/image_processing/
 image_processing: !include_dir_list image_processing/
-
-# https://www.home-assistant.io/integrations/apcupsd/
-apcupsd: !include apcupsd.yaml
 
 # https://www.home-assistant.io/integrations/sabnzbd/
 sabnzbd: !include sabnzbd.yaml
@@ -105,9 +117,6 @@ ios: !include ios/ios.yaml
 
 # https://www.home-assistant.io/integrations/ombi/
 ombi: !include ombi.yaml
-
-# https://www.home-assistant.io/integrations/binary_sensor/
-binary_sensor: !include_dir_list binary_sensors/
 
 # https://www.home-assistant.io/integrations/input_boolean/
 input_boolean: !include_dir_named input_booleans/
@@ -124,32 +133,17 @@ input_number: !include_dir_named input_numbers/
 # https://www.home-assistant.io/integrations/input_select/
 input_select: !include_dir_named input_selects/
 
-# https://www.home-assistant.io/integrations/camera/
-camera: !include_dir_list cameras/
-
-# https://www.home-assistant.io/integrations/alexa.smart_home/
-alexa: !include alexa.yaml
-
 # https://www.home-assistant.io/integrations/google_assistant/
 google_assistant: !include google_assistant.yaml
 
 # https://www.home-assistant.io/integrations/light/
 light: !include_dir_list lights/
 
-# https://www.home-assistant.io/integrations/alert/
-alert: !include_dir_named alerts/
-
-# https://www.home-assistant.io/integrations/calendar.google/
-google: !include google.yaml
-
 # https://www.home-assistant.io/integrations/homekit/
 homekit: !include homekit.yaml
 
 # (GitHub repo here)
 #remote_homeassistant: !include remote_homeassistant.yaml
-
-# (GitHub repo here)
-browser_mod: !include browser_mod.yaml
 
 # https://www.home-assistant.io/integrations/timer/
 timer: !include_dir_named timers/
@@ -169,5 +163,11 @@ influxdb: !include influxdb.yaml
 # https://www.home-assistant.io/docs/mqtt/broker/
 mqtt: !include mqtt.yaml
 
-# https://www.home-assistant.io/integrations/counter/
-counter: !include_dir_named counters/
+# https://www.home-assistant.io/integrations/wake_on_lan/
+wake_on_lan:
+
+# Part of BadNest
+water_heater: !include water_heater.yaml
+
+# https://www.home-assistant.io/integrations/webostv/
+webostv: !include_dir_list webostvs/

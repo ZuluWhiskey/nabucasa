@@ -38,6 +38,7 @@ ENTITY_ID_FORMAT = DOMAIN + '.{}'
 DEFAULT_NAME = 'Unifi'
 DEFAULT_SITE  = 'default'
 DEFAULT_VERIFYSSL = False
+UDM = True
 
 SCAN_INTERVAL = timedelta(seconds=60)
 
@@ -59,8 +60,9 @@ def setup_platform(hass, config, add_devices, discovery_info=None):
     baseurl = config.get(CONF_URL)
     site = config.get(CONF_REGION)
     verify_ssl = config.get(CONF_VERIFY_SSL)
+    udm = True
 
-    data = UnifiSensorData(hass, username, password, site, baseurl, verify_ssl)
+    data = UnifiSensorData(hass, username, password, site, baseurl, verify_ssl, udm)
 
     add_devices([UnifiSensor(hass, data, name)], True)
 
@@ -123,7 +125,7 @@ class UnifiSensorData(object):
     _login_data = {}
     _current_status_code = None
 
-    def __init__(self, hass, username, password, site, baseurl, verify_ssl):
+    def __init__(self, hass, username, password, site, baseurl, verify_ssl, udm):
         """
         Initiates tha api with default settings if none other are set.
 
@@ -143,6 +145,12 @@ class UnifiSensorData(object):
         self._ap_list = {}
         self.total = 0
         self.attrs = {}
+        if udm == True:
+            self.loginurl = baseurl + '/api/auth/login'
+#            self._baseurl = baseurl + '/proxy/network'
+        else:
+            self.loginurl = baseurl + '/api/login'
+            self._baseurl = baseurl 
 
     def __enter__(self):
         """
@@ -167,7 +175,7 @@ class UnifiSensorData(object):
 
         :return: None
         """
-        self._current_status_code = self._session.post("{}/api/login".format(self._baseurl), data=json.dumps(self._login_data), verify=self._verify_ssl).status_code
+        self._current_status_code = self._session.post(self.loginurl, data=json.dumps(self._login_data), verify=self._verify_ssl).status_code
 
         if self._current_status_code == 400:
             _LOGGER.error("Failed to log in to api with provided credentials")
@@ -178,7 +186,7 @@ class UnifiSensorData(object):
 
         :return: None
         """
-        self._session.get("{}/logout".format(self._baseurl))
+        self._session.get("{}/api/auth/logout".format(self._baseurl))
         self._session.close()
 
     def list_clients(self) -> list:
@@ -192,9 +200,8 @@ class UnifiSensorData(object):
         self._current_status_code = r.status_code
         
         if self._current_status_code == 401:
-            _LOGGER.error("Unifi: Invalid login, or login has expired")
+            _LOGGER.error("Unifi: Invalid login, or login has expired 1")
             return None
-
         data = r.json()['data']
 
         return data
@@ -211,7 +218,7 @@ class UnifiSensorData(object):
         self._current_status_code = r.status_code
         
         if self._current_status_code == 401:
-            _LOGGER.error("Unifi: Invalid login, or login has expired")
+            _LOGGER.error("Unifi: Invalid login, or login has expired 2")
             return None
 
         data = r.json()['data']
@@ -269,5 +276,4 @@ class UnifiSensorData(object):
         if devices_wired > 0:
           self.attrs['wired'] =devices_wired 
 
-        self.logout()      
-
+        self.logout()

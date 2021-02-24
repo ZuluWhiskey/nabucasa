@@ -2,3 +2,4 @@ default: info # See https://www.home-assistant.io/integrations/logger/ for diffe
 logs: # Enable specific logging levels for certain aspects of Home Assistant
   homeassistant.components.python_script: info # Logging for Python Scripts
   #homeassistant.components.google_assistant: debug # For debugging Google Assistant issues
+  custom_components.my_unifi: debug 

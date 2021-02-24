@@ -3,7 +3,7 @@ sensors:
   tumble_dryer_running:
     friendly_name: "Tumble Dryer Running"
     delay_off:
-      seconds: 30
+      minutes: 1
     value_template: >-
       {{ states('sensor.energy_monitor_plug_1_watts') | float > 20 }}
 
